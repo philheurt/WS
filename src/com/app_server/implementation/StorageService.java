@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 
 import com.app_server.constants.Constants;
+import com.app_server.data.Account;
 import com.app_server.utilities.Utilities;
 
 public class StorageService {
@@ -31,6 +32,24 @@ public class StorageService {
 	}
 	
     /**
+     * Method to map the result of the login query into an account object
+     * 
+     * @param resultSet
+     * @return
+     * @throws SQLException
+     * 
+     */
+	
+	private static Account map( ResultSet resultSet ) throws SQLException {
+	    Account account = new Account (null,null,null,null);
+	    account.setPseudo( resultSet.getString( "pseudo" ) );
+	    account.setFirstName( resultSet.getString( "first_name" ) );
+	    account.setLastName( resultSet.getString( "last_name" ) );
+	    account.setMailAddress( resultSet.getString( "email" ) );
+	    return account;
+	}
+	
+	/**
      * Method to check whether pseudo and password combination are correct
      * 
      * @param pseudo
@@ -40,9 +59,9 @@ public class StorageService {
      * 
      */
 	
-	public static boolean checkLogin(String pseudo, String password) throws Exception {
-		boolean isUserAvailable = false;
+	public static Account checkLogin(String pseudo, String password) throws Exception {
 		Connection dbConn = null;
+		Account account = new Account ("a","b","c","d");
 		try {
 			try {
 				dbConn = StorageService.createConnection();
@@ -50,14 +69,13 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT * FROM user WHERE pseudo = ? AND password = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email FROM user WHERE pseudo = ? AND password = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			//System.out.println(query);
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
-				//System.out.println(rs.getString(1) + rs.getString(2) + rs.getString(3));
-				isUserAvailable = true;
+				account = map(rs);
 			}
 		} catch (SQLException sqle) {
 			throw sqle;
@@ -72,7 +90,7 @@ public class StorageService {
 				dbConn.close();
 			}
 		}
-		return isUserAvailable;
+		return account;
 	}
 	
 	/**

@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.app_server.data.Account;
 import com.app_server.utilities.Utilities;
 
 //Path: http://localhost/app_server/ns
@@ -19,14 +20,16 @@ public class NetworkService {
 	
 	// HTTP Get Method
 		@GET 
-		// Path: http://localhost:8080/app_server/dologin
+		// Path: http://localhost:8080/app_server/ns/dologin
 		@Path("/dologin")
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/dologin?pseudo=abc&password=xyz
+		// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
 		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password){
 			String response = "";
-			if(checkCredentials(pseudo, password)){
+			Account account = new Account("a","b","c","d");
+			account = checkCredentials(pseudo, password);
+			if(account.getPseudo().equals("a")){
 				response = Utilities.constructJSON("login",true);
 			}else{
 				response = Utilities.constructJSON("login", false, "Incorrect Email or Password");
@@ -41,33 +44,33 @@ public class NetworkService {
 		 * @param password
 		 * @return
 		 */
-		private boolean checkCredentials(String pseudo, String password){
+		private Account checkCredentials(String pseudo, String password){
 			// System.out.println("Inside checkCredentials");
-			boolean result = false;
+
+			Account account = new Account("a","b","c","d");
+			
 			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 				try {
-					result = StorageService.checkLogin(pseudo, password);
+					account = StorageService.checkLogin(pseudo, password);
 					//System.out.println("Inside checkCredentials try "+result);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//System.out.println("Inside checkCredentials catch");
-					result = false;
 				}
 			}else{
 				//System.out.println("Inside checkCredentials else");
-				result = false;
 			}
 				
-			return result;
+			return account;
 		}
 		
 		// HTTP Get Method
 		@GET 
-		// Path: http://localhost:8080/app_server/register/doregister
+		// Path: http://localhost:8080/app_server/ns/doregister
 		@Path("/doregister")  
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
+		// Query parameters are parameters: http://localhost:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
 		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
 			String response = "";
 			//System.out.println("Inside doregister "+pseudo+"  "+password);
