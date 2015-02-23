@@ -25,16 +25,27 @@ public class NetworkService {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
-		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password){
+		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
 			String response = "";
 			Account account = new Account("a","b","c","d");
-			account = checkCredentials(pseudo, password);
-			if(account.getPseudo().equals("a")){
-				response = Utilities.constructJSON("login",true);
+			if(StorageService.checkLogin(pseudo,password)){
+				account = StorageService.doLogin(pseudo, password);
+				JSONObject obj = new JSONObject();
+				try {
+					obj.put("tag", "login");
+					obj.put("status",true);
+					obj.put("pseudo", account.getPseudo());
+					obj.put("first_name", account.getFirstName());
+					obj.put("last_name", account.getLastName());
+					obj.put("email", account.getEMailAddress());
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+				}
+				return obj.toString();	
 			}else{
 				response = Utilities.constructJSON("login", false, "Incorrect Email or Password");
-			}
-		return response;		
+				return response;
+			}	
 		}
 		
 		/**
@@ -51,7 +62,7 @@ public class NetworkService {
 			
 			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 				try {
-					account = StorageService.checkLogin(pseudo, password);
+					account = StorageService.doLogin(pseudo, password);
 					//System.out.println("Inside checkCredentials try "+result);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
