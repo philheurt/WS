@@ -1,6 +1,7 @@
 package com.app_server.implementation;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -11,7 +12,11 @@ import javax.ws.rs.core.MediaType;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+
+import org.json.simple.JSONArray;
+
 import com.app_server.data.Account;
+import com.app_server.data.Tag;
 import com.app_server.interfaces.NetworkServiceInterface;
 import com.app_server.utilities.Utilities;
 
@@ -219,6 +224,7 @@ public class NetworkService implements NetworkServiceInterface {
 					}
 					
 					// HTTP Get Method
+					@SuppressWarnings("unchecked")
 					@GET 
 					// Path: http://localhost/<appln-folder-name>/tag/deletetag
 					@Path("/retrievetag")
@@ -228,42 +234,26 @@ public class NetworkService implements NetworkServiceInterface {
 					public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
 						String response = "";
 						if (StorageService.checkLogin(pseudo, password)){
-							if(checkRetrieveTag(pseudo)){
-								JSONObject response1 = new JSONObject();
-								try {
-									response1.put("retrievetag",true);
-//CheckRetrieveTags renvoie ListTag : ArrayList<Tag>
-								} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								}
-							}else{
-							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+							
+							ArrayList<Tag> ListOfTag = StorageService.retrieveTags(pseudo, password);
+							JSONArray arrayOfJsonTag = new JSONArray();
+							
+							for(Tag tag : ListOfTag){
+								JSONObject tagJson = new JSONObject();
+								tagJson.put("tagID", tag.getUid());
+								tagJson.put("nameTag", tag.getObjectName());
+								tagJson.put("picture", tag.getObjectImageName());
+								arrayOfJsonTag.add(tagJson);	
 							}
+							JSONObject reponse = new JSONObject();
+							
+							reponse.put("tag", "retrieveTags");
+							reponse.put("status", true);
+							reponse.put("listTags", arrayOfJsonTag);
+							
 						}else{
-							response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
+							response = Utilities.constructJSON("retrieveTags", false, "Wrong combination pseudo/password");
 						}
 					return response.toString();		
 					}
-					
-					private boolean checkRetrieveTag(String pseudo){
-						System.out.println("Inside checkDeleteTag");
-						boolean result = false;
-						if(Utilities.isNotNull(pseudo)){
-							try {
-							//	result = StorageService.retrieveTag(pseudo);
-								//System.out.println("Inside checkDeleteTag try "+result);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								//System.out.println("Inside checkDeleteTag catch");
-								result = false;
-							}
-						}else{
-							//System.out.println("Inside checkDeleteTag else");
-							result = false;
-						}
-							
-						return result;
-					}
-	
-	
 }
