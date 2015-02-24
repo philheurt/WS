@@ -233,7 +233,6 @@ public class NetworkService implements NetworkServiceInterface {
 								try {
 									response1.put("retrievetag",true);
 //CheckRetrieveTags renvoie ListTag : ArrayList<Tag>
-										
 								} catch (JSONException e) {
 								// TODO Auto-generated catch block
 								}
