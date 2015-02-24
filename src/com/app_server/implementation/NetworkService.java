@@ -12,11 +12,12 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.app_server.data.Account;
+import com.app_server.interfaces.NetworkServiceInterface;
 import com.app_server.utilities.Utilities;
 
 //Path: http://localhost/app_server/ns
 @Path("/ns")
-public class NetworkService {
+public class NetworkService implements NetworkServiceInterface {
 	
 	// HTTP Get Method
 		@GET 
@@ -140,14 +141,19 @@ public class NetworkService {
 			@Path("/addtag")
 			// Produces JSON as response
 			@Produces(MediaType.APPLICATION_JSON) 
-			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/addtag?pseudo=abc&object_name=xyz&picture=url
-			public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture){
+			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
+			public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
 				String response = "";
-				if(checkCredentials(pseudo, object_name, picture)){
-					response = Utilities.constructJSON("addtag",true);
+				if (StorageService.checkLogin(pseudo, password)){
+					if(checkCredentials(pseudo, object_name, picture)){
+						response = Utilities.constructJSON("addtag",true);
+					}else{
+						response = Utilities.constructJSON("addtag", false, "A problem has occured");
+					}
 				}else{
-					response = Utilities.constructJSON("addtag", false, "A problem has occured");
+					response = Utilities.constructJSON("addtag", false, "Wrong combination pseudo/password");
 				}
+				
 			return response;		
 			}
 			
@@ -177,13 +183,17 @@ public class NetworkService {
 					@Path("/deletetag")
 					// Produces JSON as response
 					@Produces(MediaType.APPLICATION_JSON) 
-					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&object_name=xyz
-					public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("object_name") String object_name){
+					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+					public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name) throws Exception{
 						String response = "";
-						if(checkDeleteTag(pseudo, object_name)){
-							response = Utilities.constructJSON("deletetag",true);
+						if (StorageService.checkLogin(pseudo, password)){
+							if(checkDeleteTag(pseudo, object_name)){
+								response = Utilities.constructJSON("deletetag",true);
+							}else{
+								response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+							}
 						}else{
-							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+							response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
 						}
 					return response;		
 					}
@@ -214,19 +224,23 @@ public class NetworkService {
 					@Path("/retrievetag")
 					// Produces JSON as response
 					@Produces(MediaType.APPLICATION_JSON) 
-					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&object_name=xyz
-					public String retrieveTag(@QueryParam("pseudo") String pseudo){
+					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+					public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
 						String response = "";
-						if(checkRetrieveTag(pseudo)){
-							JSONObject response1 = new JSONObject();
-							try {
-								response1.put("retrievetag",true);
+						if (StorageService.checkLogin(pseudo, password)){
+							if(checkRetrieveTag(pseudo)){
+								JSONObject response1 = new JSONObject();
+								try {
+									response1.put("retrievetag",true);
 								
-							} catch (JSONException e) {
+								} catch (JSONException e) {
 								// TODO Auto-generated catch block
+								}
+							}else{
+							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
 							}
 						}else{
-							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+							response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
 						}
 					return response.toString();		
 					}
