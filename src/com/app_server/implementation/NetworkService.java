@@ -1,6 +1,7 @@
 package com.app_server.implementation;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -8,10 +9,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.app_server.data.Account;
+import com.app_server.data.Tag;
 import com.app_server.utilities.Utilities;
 
 //Path: http://localhost/app_server/ns
@@ -27,9 +30,9 @@ public class NetworkService {
 		// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
 		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
 			String response = "";
-			Account account = new Account("a","b","c","d");
+			Account account;
 			if(StorageService.checkLogin(pseudo,password)){
-				account = StorageService.doLogin(pseudo, password);
+			account = StorageService.doLogin(pseudo, password);
 				JSONObject obj = new JSONObject();
 				try {
 					obj.put("tag", "login");
@@ -48,32 +51,6 @@ public class NetworkService {
 			}	
 		}
 		
-		/**
-		 * Method to check whether the entered credential is valid
-		 * 
-		 * @param pseudo
-		 * @param password
-		 * @return
-		 */
-		private Account checkCredentials(String pseudo, String password){
-			// System.out.println("Inside checkCredentials");
-
-			Account account = new Account("a","b","c","d");
-			
-			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
-				try {
-					account = StorageService.doLogin(pseudo, password);
-					//System.out.println("Inside checkCredentials try "+result);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					//System.out.println("Inside checkCredentials catch");
-				}
-			}else{
-				//System.out.println("Inside checkCredentials else");
-			}
-				
-			return account;
-		}
 		
 		// HTTP Get Method
 		@GET 
@@ -82,9 +59,9 @@ public class NetworkService {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://localhost:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
-		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
+		public String doRegister(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
 			String response = "";
-			//System.out.println("Inside doregister "+pseudo+"  "+password);
+			//System.out.println("Inside doRegister "+pseudo+"  "+password);
 			int retCode = registerUser(pseudo, password, first_name, last_name, email);
 			if(retCode == 0){
 				response = Utilities.constructJSON("register",true);
@@ -100,7 +77,7 @@ public class NetworkService {
 		}
 		
 		private int registerUser(String pseudo, String password, String first_name, String last_name, String email){
-			System.out.println("Inside registerUser");
+			//System.out.println("Inside registerUser");
 			int result = 3;
 			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){ // I still use my utilities not the mutual ones
 				try {
@@ -109,14 +86,14 @@ public class NetworkService {
 						result = 0;
 					}
 				} catch(SQLException sqle){
-					System.out.println("RegisterUSer catch sqle");
+					//System.out.println("RegisterUSer catch sqle");
 					//When Primary key violation occurs that means user is already registered
 					if(sqle.getErrorCode() == 1062){
 						result = 1;
 					} 
 					//When special characters are used in pseudo, password, first_name, last_name, email)
 					else if(sqle.getErrorCode() == 1064){
-						System.out.println(sqle.getErrorCode());
+						//System.out.println(sqle.getErrorCode());
 						result = 2;
 					}
 				}
@@ -133,123 +110,117 @@ public class NetworkService {
 			return result;
 		}
 		
-	//Path: http://localhost/app_server/
-		// HTTP Get Method
+	// HTTP Get Method
+	@GET 					
+	@Path("/addtag")
+	// Produces JSON as response
+	@Produces(MediaType.APPLICATION_JSON) 
+	// Query parameters are parameters: http://localhost:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
+	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
+		String response = "";
+		if (StorageService.checkLogin(pseudo, password)){
+			if(checkCredentials(pseudo, object_name, picture)){
+				response = Utilities.constructJSON("addtag",true);
+			}else{
+				response = Utilities.constructJSON("addtag", false, "A problem has occured");
+			}
+		}else{
+			response = Utilities.constructJSON("addtag", false, "Wrong combination pseudo/password");
+		}
+		
+	return response;		
+	}
+	
+	private boolean checkCredentials(String pseudo, String object_name, String picture){
+		System.out.println("Inside checkCredentials");
+		boolean result = false;
+		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)&&Utilities.isNotNull(picture)){
+			try {
+				result = StorageService.insertTag(pseudo, object_name, picture);
+				//System.out.println("Inside checkCredentials try "+result);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				//System.out.println("Inside checkCredentials catch");
+				result = false;
+			}
+		}else{
+			//System.out.println("Inside checkCredentials else");
+			result = false;
+		}
+			
+		return result;
+	}
+	
+	// HTTP Get Method
 			@GET 
-			// Path: http://localhost/app_server/addtag
-			@Path("/addtag")
+			// Path: http://localhost/<appln-folder-name>/tag/deletetag
+			@Path("/deletetag")
 			// Produces JSON as response
 			@Produces(MediaType.APPLICATION_JSON) 
-			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/addtag?pseudo=abc&object_name=xyz&picture=url
-			public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture){
+			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name) throws Exception{
 				String response = "";
-				if(checkCredentials(pseudo, object_name, picture)){
-					response = Utilities.constructJSON("addtag",true);
+				if (StorageService.checkLogin(pseudo, password)){
+					if(checkDeleteTag(pseudo, object_name)){
+						response = Utilities.constructJSON("deletetag",true);
+					}else{
+						response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+					}
 				}else{
-					response = Utilities.constructJSON("addtag", false, "A problem has occured");
+					response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
 				}
 			return response;		
 			}
 			
-			private boolean checkCredentials(String pseudo, String object_name, String picture){
-				System.out.println("Inside checkCredentials");
+			private boolean checkDeleteTag(String pseudo, String object_name){
+				System.out.println("Inside checkDeleteTag");
 				boolean result = false;
-				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)&&Utilities.isNotNull(picture)){
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 					try {
-						result = StorageService.insertTag(pseudo, object_name, picture);
-						//System.out.println("Inside checkCredentials try "+result);
+						result = StorageService.deleteTag(pseudo, object_name);
+						//System.out.println("Inside checkDeleteTag try "+result);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
-						//System.out.println("Inside checkCredentials catch");
+						//System.out.println("Inside checkDeleteTag catch");
 						result = false;
 					}
 				}else{
-					//System.out.println("Inside checkCredentials else");
+					//System.out.println("Inside checkDeleteTag else");
 					result = false;
 				}
 					
 				return result;
 			}
-			
-			// HTTP Get Method
-					@GET 
-					// Path: http://localhost/<appln-folder-name>/tag/deletetag
-					@Path("/deletetag")
-					// Produces JSON as response
-					@Produces(MediaType.APPLICATION_JSON) 
-					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&object_name=xyz
-					public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("object_name") String object_name){
-						String response = "";
-						if(checkDeleteTag(pseudo, object_name)){
-							response = Utilities.constructJSON("deletetag",true);
-						}else{
-							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
-						}
-					return response;		
-					}
-					
-					private boolean checkDeleteTag(String pseudo, String object_name){
-						System.out.println("Inside checkDeleteTag");
-						boolean result = false;
-						if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
-							try {
-								result = StorageService.deleteTag(pseudo, object_name);
-								//System.out.println("Inside checkDeleteTag try "+result);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								//System.out.println("Inside checkDeleteTag catch");
-								result = false;
-							}
-						}else{
-							//System.out.println("Inside checkDeleteTag else");
-							result = false;
-						}
 							
-						return result;
-					}
-					
-					// HTTP Get Method
-					@GET 
-					// Path: http://localhost/<appln-folder-name>/tag/deletetag
-					@Path("/retrievetag")
-					// Produces JSON as response
-					@Produces(MediaType.APPLICATION_JSON) 
-					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&object_name=xyz
-					public String retrieveTag(@QueryParam("pseudo") String pseudo){
-						String response = "";
-						if(checkRetrieveTag(pseudo)){
-							JSONObject response1 = new JSONObject();
-							try {
-								response1.put("retrievetag",true);
-								
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}
-						}else{
-							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
-						}
-					return response.toString();		
-					}
-					
-					private boolean checkRetrieveTag(String pseudo){
-						System.out.println("Inside checkDeleteTag");
-						boolean result = false;
-						if(Utilities.isNotNull(pseudo)){
-							try {
-							//	result = StorageService.retrieveTag(pseudo);
-								//System.out.println("Inside checkDeleteTag try "+result);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								//System.out.println("Inside checkDeleteTag catch");
-								result = false;
-							}
-						}else{
-							//System.out.println("Inside checkDeleteTag else");
-							result = false;
-						}
-							
-						return result;
-					}
-	
-	
+		// HTTP Get Method
+		@GET 
+		// Path: http://localhost/<appln-folder-name>/tag/deletetag
+		@Path("/retrievetag")
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON) 
+		// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+		public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
+			JSONObject response = new JSONObject();
+			response.put("tag", "retrieveTags");
+			if (StorageService.checkLogin(pseudo, password)){
+
+				ArrayList<Tag> ListOfTag = StorageService.retrieveTags(pseudo, password);
+				JSONArray arrayOfJsonTag = new JSONArray();
+
+				for(Tag tag : ListOfTag){
+					JSONObject tagJson = new JSONObject();
+					tagJson.put("tagID", tag.getUid());
+					tagJson.put("nameTag", tag.getObjectName());
+					tagJson.put("picture", tag.getObjectImageName());
+					arrayOfJsonTag.put(tagJson);	
+				}					
+				response.put("status", true);
+				response.put("listTags", arrayOfJsonTag);
+
+			}else{
+				response.put("status", false);
+				response.put("err_msg", "Wrong combination pseudo/password");
+			}
+			return response.toString();		
+		}
 }
