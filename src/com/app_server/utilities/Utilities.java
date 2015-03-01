@@ -66,19 +66,16 @@ public class Utilities {
 		return obj.toString(); 
 	}
 	
-	
 	public static String constructJSON(String tag, boolean status, ArrayList<Tag> ListTag) {
 		JSONObject obj = new JSONObject();
 		try {
 			obj.put("tag", tag);
 			obj.put("status", new Boolean(status));
-			obj.put("error_msg", err_msg);
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 		}
 		return obj.toString(); 
 	}
-	
 	
 	/**
 	 * Array of characters used for hexa-decimal conversion.

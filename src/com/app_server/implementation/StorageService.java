@@ -4,13 +4,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 
 import com.app_server.constants.Constants;
 import com.app_server.data.Account;
+import com.app_server.data.Tag;
 import com.app_server.utilities.Utilities;
 
-public class StorageService {
-	
+public class StorageService {	
+
 	/**
 	 * Method to create a connection to the database
 	 * 
@@ -53,8 +55,7 @@ public class StorageService {
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			//System.out.println(query);
 			ResultSet rs = preparedStatement.executeQuery();
-			while (rs.next()) {
-				//System.out.println(rs.getString(1) + rs.getString(2) + rs.getString(3));
+			while (rs.next()) {				
 				isUserAvailable = true;
 			}
 		} catch (SQLException sqle) {
@@ -83,11 +84,7 @@ public class StorageService {
      */
 	
 	private static Account map( ResultSet resultSet ) throws SQLException {
-	    Account account = new Account ("a","b","c","d");
-	    account.setPseudo( resultSet.getString( "pseudo" ) );
-	    account.setFirstName( resultSet.getString( "first_name" ) );
-	    account.setLastName( resultSet.getString( "last_name" ) );
-	    account.setMailAddress( resultSet.getString( "email" ) );
+	    Account account = new Account (resultSet.getString( "pseudo" ), resultSet.getString( "first_name" ),resultSet.getString( "last_name" ),resultSet.getString( "email" ));	  
 	    return account;
 	}
 	
@@ -103,7 +100,7 @@ public class StorageService {
 	
 	public static Account doLogin(String pseudo, String password) throws Exception {
 		Connection dbConn = null;
-		Account account = new Account ("a","b","c","d");
+		Account account = null;
 		try {
 			try {
 				dbConn = StorageService.createConnection();
@@ -190,6 +187,7 @@ public class StorageService {
 		return insertStatus;
 	}
 	
+	
 	/**
 	 * Method to insert  a tag in the database
 	 * 
@@ -218,7 +216,6 @@ public class StorageService {
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, object_name);
 			preparedStatement.setString( 3, picture);					
-			//System.out.println(query);
 			int records = preparedStatement.executeUpdate();
 			//System.out.println(records);
 			//When record is successfully inserted
@@ -279,5 +276,55 @@ public class StorageService {
 			}
 		}
 		return deleteStatus;
+	}
+	
+	/**
+     * Method to map the result of the login query into an account object
+     * 
+     * @param resultSet
+     * @return
+     * @throws SQLException
+     * 
+     */
+	
+	private static Tag mapTag( ResultSet resultSet ) throws SQLException {
+	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ),resultSet.getString( "picture" ));	  
+	    return tag;
+	}
+	
+	public static ArrayList<Tag> retrieveTags(String pseudo, String password) throws Exception{
+		Connection dbConn = null;
+		ArrayList<Tag >result = new ArrayList<Tag>();
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(StorageService.checkLogin(pseudo, password)){
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture FROM tag where pseudo_owner = ?;");
+			preparedStatement.setString( 1, pseudo );						
+			ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				result.add(mapTag(rs));
+			}
+			}
+		} catch (SQLException sqle) {
+			//sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			//e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return result;
 	}
 }
