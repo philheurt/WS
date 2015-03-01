@@ -54,6 +54,47 @@ public class NetworkService implements NetworkServiceInterface {
 			}	
 		}
 		
+		// HTTP Get Method
+		@GET 
+		// Path: http://localhost:8080/app_server/ns/modifyAccount
+		@Path("/modifyAccount")
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON) 
+		// Query parameters are parameters: http://localhost:8080/app_server/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword&newFirstName=abc&newLastName=abc
+		public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPseudo") String newPseudo, @QueryParam("newPassword") String newPassword, @QueryParam("newFirstName") String newFirstName, @QueryParam("newLastName") String newLastName) throws Exception{
+			String response = "";
+			boolean status = true;
+			Account account = new Account("a","b","c","d");
+			if(StorageService.checkLogin(pseudo,password)){
+				account = StorageService.doLogin(pseudo, password);
+				if ((pseudo!=newPseudo)&&(StorageService.modifyPseudo(pseudo, newPseudo)))
+					account.setPseudo(newPseudo);
+				if (password!=newPassword)
+					status = (StorageService.modifyPassword(pseudo, newPassword));
+				if ((account.getFirstName()!=newFirstName)&&(StorageService.modifyFirstName(pseudo, newFirstName)))
+					account.setFirstName(newFirstName);
+				if ((account.getLastName()!=newLastName)&&(StorageService.modifyLastName(pseudo, newLastName)))
+					account.setLastName(newLastName);
+				
+				JSONObject obj = new JSONObject();
+				try {
+					obj.put("tag", "login");
+					obj.put("status",status);
+					obj.put("pseudo", account.getPseudo());
+					obj.put("first_name", account.getFirstName());
+					obj.put("last_name", account.getLastName());
+					obj.put("email", account.getEMailAddress());
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+				}
+				return obj.toString();	
+			}else{
+				response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
+				return response;
+			}	
+		}
+		
+		
 		/**
 		 * Method to check whether the entered credential is valid
 		 * 
