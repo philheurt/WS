@@ -60,8 +60,8 @@ public class NetworkService implements NetworkServiceInterface {
 		@Path("/modifyAccount")
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword&newFirstName=abc&newLastName=abc
-		public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPseudo") String newPseudo, @QueryParam("newPassword") String newPassword, @QueryParam("newFirstName") String newFirstName, @QueryParam("newLastName") String newLastName) throws Exception{
+		// Query parameters are parameters: http://localhost:8080/app_server/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword&newFirstName=abc&newLastName=abc&newEMailAdress=abc
+		public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPseudo") String newPseudo, @QueryParam("newPassword") String newPassword, @QueryParam("newFirstName") String newFirstName, @QueryParam("newLastName") String newLastName, @QueryParam("newEmailAdress") String newEMailAdress) throws Exception{
 			String response = "";
 			boolean status = true;
 			Account account = new Account("a","b","c","d");
@@ -75,6 +75,8 @@ public class NetworkService implements NetworkServiceInterface {
 					account.setFirstName(newFirstName);
 				if ((account.getLastName()!=newLastName)&&(StorageService.modifyLastName(pseudo, newLastName)))
 					account.setLastName(newLastName);
+				if ((account.getEMailAddress()!=newEMailAdress)&&(StorageService.modifyEMailAdress(pseudo, newEMailAdress)))
+					account.setMailAddress(newEMailAdress);
 				
 				JSONObject obj = new JSONObject();
 				try {
