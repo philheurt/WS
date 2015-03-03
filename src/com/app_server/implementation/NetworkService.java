@@ -17,84 +17,115 @@ import org.json.simple.JSONArray;
 
 import com.app_server.data.Account;
 import com.app_server.data.Tag;
-import com.app_server.interfaces.NetworkServiceInterface;
 import com.app_server.utilities.Utilities;
 
 //Path: http://localhost/app_server/ns
 @Path("/ns")
-public class NetworkService implements NetworkServiceInterface {
+public class NetworkService {
+	
+
+
+	// HTTP Get Method
+			@GET 
+			// Path: http://localhost:8080/app_server/ns/dologin
+			@Path("/dologin")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
+			public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
+				String response = "";
+				Account account;
+				if(StorageService.checkLogin(pseudo,password)){
+				account = StorageService.doLogin(pseudo, password);
+					JSONObject obj = new JSONObject();
+					try {
+						obj.put("tag", "login");
+						obj.put("status",true);
+						obj.put("pseudo", account.getPseudo());
+						obj.put("first_name", account.getFirstName());
+						obj.put("last_name", account.getLastName());
+						obj.put("email", account.getEMailAddress());
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+					}
+					return obj.toString();	
+				}else{
+					response = Utilities.constructJSON("login", false, "Incorrect Email or Password");
+					return response;
+				}	
+			}
+	
 	
 	// HTTP Get Method
-		@GET 
-		// Path: http://localhost:8080/app_server/ns/dologin
-		@Path("/dologin")
-		// Produces JSON as response
-		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
-		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
-			String response = "";
-			Account account = new Account("a","b","c","d");
-			if(StorageService.checkLogin(pseudo,password)){
-				account = StorageService.doLogin(pseudo, password);
-				JSONObject obj = new JSONObject();
-				try {
-					obj.put("tag", "login");
-					obj.put("status",true);
-					obj.put("pseudo", account.getPseudo());
-					obj.put("first_name", account.getFirstName());
-					obj.put("last_name", account.getLastName());
-					obj.put("email", account.getEMailAddress());
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-				}
-				return obj.toString();	
-			}else{
-				response = Utilities.constructJSON("login", false, "Incorrect Email or Password");
-				return response;
-			}	
-		}
+			@GET 
+			// Path: http://localhost:8080/app_server/ns/test
+			@Path("/test")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
+			public String test() throws Exception{
+				
+				return "success";
+			}
+			
+		
+			// HTTP Get Method
+			@GET 
+			// Path: http://localhost:8080/app_server/ns/modifyEMailAddress
+			@Path("/modifyEMailAddress")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://localhost:8080/app_server/modifyEmailAddress?pseudo=abc&password=xyz&newEMailAddress=abc
+			public String modifyEMailAddress(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newEMailAddress") String newEMailAddress) throws Exception{
+				String response = "";
+				boolean status = true;
+				if(StorageService.checkLogin(pseudo,password)){
+					status = (StorageService.modifyEMailAddress(pseudo, newEMailAddress));
+					
+					JSONObject obj = new JSONObject();
+					try {
+						obj.put("tag", "modifyEMailAddress");
+						obj.put("status",status);
+								
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+					}
+					return obj.toString();	
+				}else{
+					response = Utilities.constructJSON("modifyEMailAddress", false, "Incorrect Pseudo/Password");
+					return response;
+				}	
+			}
+		
 		
 		// HTTP Get Method
 		@GET 
-		// Path: http://localhost:8080/app_server/ns/modifyAccount
-		@Path("/modifyAccount")
+		// Path: http://localhost:8080/app_server/ns/modifyPassword
+		@Path("/modifyPassword")
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword&newFirstName=abc&newLastName=abc&newEMailAdress=abc
-		public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPseudo") String newPseudo, @QueryParam("newPassword") String newPassword, @QueryParam("newFirstName") String newFirstName, @QueryParam("newLastName") String newLastName, @QueryParam("newEmailAdress") String newEMailAdress) throws Exception{
+		// Query parameters are parameters: http://localhost:8080/app_server/modifyPassword?pseudo=abc&password=xyz&newPassword=abc
+		public String modifyPassword(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPassword") String newPassword) throws Exception{
 			String response = "";
 			boolean status = true;
-			Account account = new Account("a","b","c","d");
 			if(StorageService.checkLogin(pseudo,password)){
-				account = StorageService.doLogin(pseudo, password);
-				if ((pseudo!=newPseudo)&&(StorageService.modifyPseudo(pseudo, newPseudo)))
-					account.setPseudo(newPseudo);
-				if (password!=newPassword)
-					status = (StorageService.modifyPassword(pseudo, newPassword));
-				if ((account.getFirstName()!=newFirstName)&&(StorageService.modifyFirstName(pseudo, newFirstName)))
-					account.setFirstName(newFirstName);
-				if ((account.getLastName()!=newLastName)&&(StorageService.modifyLastName(pseudo, newLastName)))
-					account.setLastName(newLastName);
-				if ((account.getEMailAddress()!=newEMailAdress)&&(StorageService.modifyEMailAdress(pseudo, newEMailAdress)))
-					account.setMailAddress(newEMailAdress);
+				status = (StorageService.modifyPassword(pseudo, newPassword));
 				
 				JSONObject obj = new JSONObject();
 				try {
-					obj.put("tag", "login");
+					obj.put("tag", "modifyPassword");
 					obj.put("status",status);
-					obj.put("pseudo", account.getPseudo());
-					obj.put("first_name", account.getFirstName());
-					obj.put("last_name", account.getLastName());
-					obj.put("email", account.getEMailAddress());
+							
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 				}
 				return obj.toString();	
 			}else{
-				response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
+				response = Utilities.constructJSON("modifyPassword", false, "Incorrect Pseudo/Password");
 				return response;
 			}	
 		}
+				
 		
 		
 		/**
@@ -131,7 +162,7 @@ public class NetworkService implements NetworkServiceInterface {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://localhost:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
-		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
+		public String doRegister(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
 			String response = "";
 			//System.out.println("Inside doregister "+pseudo+"  "+password);
 			int retCode = registerUser(pseudo, password, first_name, last_name, email);

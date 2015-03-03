@@ -241,120 +241,6 @@ public class StorageService {
 	}
 	
 	
-	public static boolean modifyPseudo(String pseudo, String newPseudo) throws SQLException, Exception {
-		boolean modifyPseudo = false;
-		Connection dbConn = null;
-		try {
-			try {
-				dbConn = StorageService.createConnection();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE user SET pseudo = ? WHERE pseudo = ? ;");
-			preparedStatement.setString( 1, newPseudo );
-			preparedStatement.setString( 2, pseudo);					
-			//System.out.println(query);
-			int records = preparedStatement.executeUpdate();
-			//System.out.println(records);
-			//When record is successfully inserted
-			if (records > 0) {
-				modifyPseudo = true;
-			}
-		} catch (SQLException sqle) {
-			//sqle.printStackTrace();
-			throw sqle;
-		} catch (Exception e) {
-			//e.printStackTrace();
-			// TODO Auto-generated catch block
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
-			}
-		}
-		return modifyPseudo;
-	}
-	
-	
-	public static boolean modifyFirstName(String pseudo, String newFirstName) throws SQLException, Exception {
-		boolean modifyFirstName = false;
-		Connection dbConn = null;
-		try {
-			try {
-				dbConn = StorageService.createConnection();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE user SET first_name = ? WHERE pseudo = ? ;");
-			preparedStatement.setString( 1, newFirstName );
-			preparedStatement.setString( 2, pseudo);					
-			//System.out.println(query);
-			int records = preparedStatement.executeUpdate();
-			//System.out.println(records);
-			//When record is successfully inserted
-			if (records > 0) {
-				modifyFirstName = true;
-			}
-		} catch (SQLException sqle) {
-			//sqle.printStackTrace();
-			throw sqle;
-		} catch (Exception e) {
-			//e.printStackTrace();
-			// TODO Auto-generated catch block
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
-			}
-		}
-		return modifyFirstName;
-	}
-	
-	public static boolean modifyLastName(String pseudo, String newLastName) throws SQLException, Exception {
-		boolean modifyLastName = false;
-		Connection dbConn = null;
-		try {
-			try {
-				dbConn = StorageService.createConnection();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE user SET last_name = ? WHERE pseudo = ? ;");
-			preparedStatement.setString( 1, newLastName );
-			preparedStatement.setString( 2, pseudo);					
-			//System.out.println(query);
-			int records = preparedStatement.executeUpdate();
-			//System.out.println(records);
-			//When record is successfully inserted
-			if (records > 0) {
-				modifyLastName = true;
-			}
-		} catch (SQLException sqle) {
-			//sqle.printStackTrace();
-			throw sqle;
-		} catch (Exception e) {
-			//e.printStackTrace();
-			// TODO Auto-generated catch block
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
-			}
-		}
-		return modifyLastName;
-	}
 	
 	public static boolean modifyPassword(String pseudo, String newPassword) throws SQLException, Exception {
 		boolean modifyPassword = false;
@@ -395,8 +281,8 @@ public class StorageService {
 	}
 	
 	
-	public static boolean modifyEMailAdress(String pseudo, String newEMailAdress) throws SQLException, Exception {
-		boolean modifyEMailAdress = false;
+	public static boolean modifyEMailAddress(String pseudo, String newEMailAddress) throws SQLException, Exception {
+		boolean modifyEMailAddress = false;
 		Connection dbConn = null;
 		try {
 			try {
@@ -406,14 +292,14 @@ public class StorageService {
 				e.printStackTrace();
 			}
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE user SET email = ? WHERE pseudo = ? ;");
-			preparedStatement.setString( 1, newEMailAdress );
+			preparedStatement.setString( 1, newEMailAddress );
 			preparedStatement.setString( 2, pseudo);					
 			//System.out.println(query);
 			int records = preparedStatement.executeUpdate();
 			//System.out.println(records);
 			//When record is successfully inserted
 			if (records > 0) {
-				modifyEMailAdress = true;
+				modifyEMailAddress = true;
 			}
 		} catch (SQLException sqle) {
 			//sqle.printStackTrace();
@@ -430,7 +316,7 @@ public class StorageService {
 				dbConn.close();
 			}
 		}
-		return modifyEMailAdress;
+		return modifyEMailAddress;
 	}
 	
 	
