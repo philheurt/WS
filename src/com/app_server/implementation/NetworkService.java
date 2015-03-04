@@ -33,11 +33,10 @@ public class NetworkService {
 			@Produces(MediaType.APPLICATION_JSON) 
 			// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
 			public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
-				String response = "";
 				Account account;
+				JSONObject obj = new JSONObject();
 				if(StorageService.checkLogin(pseudo,password)){
 				account = StorageService.doLogin(pseudo, password);
-					JSONObject obj = new JSONObject();
 					try {
 						obj.put("tag", "login");
 						obj.put("status",true);
@@ -50,8 +49,10 @@ public class NetworkService {
 					}
 					return obj.toString();	
 				}else{
-					response = Utilities.constructJSON("login", false, "Incorrect Email or Password");
-					return response;
+					obj.put("tag", "login");
+					obj.put("status",false);
+					obj.put("Error msg","Incorrect Email or Password");
+					return obj.toString();
 				}	
 			}
 	
@@ -77,13 +78,11 @@ public class NetworkService {
 			@Produces(MediaType.APPLICATION_JSON) 
 			// Query parameters are parameters: http://localhost:8080/app_server/modifyEmailAddress?pseudo=abc&password=xyz&newEMailAddress=abc
 			public String modifyEMailAddress(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newEMailAddress") String newEMailAddress) throws Exception{
-				String response = "";
 				boolean status = true;
+				JSONObject obj = new JSONObject();
 				if(StorageService.checkLogin(pseudo,password)){
 					status = (StorageService.modifyEMailAddress(pseudo, newEMailAddress));
-					
-					JSONObject obj = new JSONObject();
-					try {
+										try {
 						obj.put("tag", "modifyEMailAddress");
 						obj.put("status",status);
 								
@@ -92,8 +91,10 @@ public class NetworkService {
 					}
 					return obj.toString();	
 				}else{
-					response = Utilities.constructJSON("modifyEMailAddress", false, "Incorrect Pseudo/Password");
-					return response;
+					obj.put("tag", "modifyEMailAddress");
+					obj.put("status",false);
+					obj.put("Error msg","Incorrect Email or Password");
+					return obj.toString();
 				}	
 			}
 		
@@ -106,12 +107,10 @@ public class NetworkService {
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://localhost:8080/app_server/modifyPassword?pseudo=abc&password=xyz&newPassword=abc
 		public String modifyPassword(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newPassword") String newPassword) throws Exception{
-			String response = "";
 			boolean status = true;
+			JSONObject obj = new JSONObject();
 			if(StorageService.checkLogin(pseudo,password)){
-				status = (StorageService.modifyPassword(pseudo, newPassword));
-				
-				JSONObject obj = new JSONObject();
+				status = (StorageService.modifyPassword(pseudo, newPassword));				
 				try {
 					obj.put("tag", "modifyPassword");
 					obj.put("status",status);
@@ -121,8 +120,10 @@ public class NetworkService {
 				}
 				return obj.toString();	
 			}else{
-				response = Utilities.constructJSON("modifyPassword", false, "Incorrect Pseudo/Password");
-				return response;
+				obj.put("tag", "modifyPassword");
+				obj.put("status",false);
+				obj.put("Error msg","Incorrect Email or Password");
+				return obj.toString();
 			}	
 		}
 				
@@ -163,20 +164,33 @@ public class NetworkService {
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://localhost:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
 		public String doRegister(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
-			String response = "";
 			//System.out.println("Inside doregister "+pseudo+"  "+password);
-			int retCode = registerUser(pseudo, password, first_name, last_name, email);
-			if(retCode == 0){
-				response = Utilities.constructJSON("register",true);
-			}else if(retCode == 1){
-				response = Utilities.constructJSON("register",false, "You are already registered");
-			}else if(retCode == 2){
-				response = Utilities.constructJSON("register",false, "Special Characters are not allowed in Pseudo and Password");
-			}else if(retCode == 3){
-				response = Utilities.constructJSON("register",false, "Error occured");
+			JSONObject obj = new JSONObject();
+			try {
+				obj.put("tag", "register");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			return response;
-					
+			int retCode = registerUser(pseudo, password, first_name, last_name, email);
+			try {
+				if(retCode == 0){
+					obj.put("status",true);	
+				}else if(retCode == 1){
+					obj.put("status",false);
+					obj.put("Error msg","You are already registered");
+				}else if(retCode == 2){
+					obj.put("status",false);
+					obj.put("Error msg","Special Characters are not allowed in Pseudo and Password");
+				}else if(retCode == 3){
+					obj.put("status",false);
+					obj.put("Error msg","Error occured");
+				}
+			} catch (JSONException e) {
+			// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return obj.toString();		
 		}
 		
 		private int registerUser(String pseudo, String password, String first_name, String last_name, String email){
@@ -222,18 +236,21 @@ public class NetworkService {
 			@Produces(MediaType.APPLICATION_JSON) 
 			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
 			public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
-				String response = "";
+				JSONObject obj = new JSONObject();
 				if (StorageService.checkLogin(pseudo, password)){
+					obj.put("tag", "addtag");
 					if(checkCredentials(pseudo, object_name, picture)){
-						response = Utilities.constructJSON("addtag",true);
+						obj.put("status", true);
 					}else{
-						response = Utilities.constructJSON("addtag", false, "A problem has occured");
+						obj.put("status", false);
+						obj.put("Error msg", "A problem has occure");
 					}
 				}else{
-					response = Utilities.constructJSON("addtag", false, "Wrong combination pseudo/password");
+					obj.put("status", false);
+					obj.put("Error msg", "Wrong combination pseudo/password");
 				}
 				
-			return response;		
+			return obj.toString();		
 			}
 			
 			private boolean checkCredentials(String pseudo, String object_name, String picture){
