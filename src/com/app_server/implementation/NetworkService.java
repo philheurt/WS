@@ -281,17 +281,20 @@ public class NetworkService {
 					@Produces(MediaType.APPLICATION_JSON) 
 					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
 					public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name) throws Exception{
-						String response = "";
+						JSONObject obj = new JSONObject();
+						obj.put("tag", "deleteTag");
 						if (StorageService.checkLogin(pseudo, password)){
 							if(checkDeleteTag(pseudo, object_name)){
-								response = Utilities.constructJSON("deletetag",true);
+								obj.put("status",  true);
 							}else{
-								response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+								obj.put("status", false);
+								obj.put("Error msg", "Problem with database");
 							}
 						}else{
-							response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
+							obj.put("status", false);
+							obj.put("Error msg", "Wrong combination pseudo/password");
 						}
-					return response;		
+					return obj.toString();		
 					}
 					
 					private boolean checkDeleteTag(String pseudo, String object_name){
@@ -323,7 +326,8 @@ public class NetworkService {
 					@Produces(MediaType.APPLICATION_JSON) 
 					// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
 					public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
-						String response = "";
+						JSONObject obj = new JSONObject();
+						obj.put("tag", "retrieveTags");
 						if (StorageService.checkLogin(pseudo, password)){
 							
 							ArrayList<Tag> ListOfTag = StorageService.retrieveTags(pseudo, password);
@@ -336,15 +340,14 @@ public class NetworkService {
 								tagJson.put("picture", tag.getObjectImageName());
 								arrayOfJsonTag.add(tagJson);	
 							}
-							JSONObject reponse = new JSONObject();
 							
-							reponse.put("tag", "retrieveTags");
-							reponse.put("status", true);
-							reponse.put("listTags", arrayOfJsonTag);
+							obj.put("status", true);
+							obj.put("listTags", arrayOfJsonTag);
 							
 						}else{
-							response = Utilities.constructJSON("retrieveTags", false, "Wrong combination pseudo/password");
+							obj.put("status", false);
+							obj.put("Error msg", "Wrong combination pseudo/password");
 						}
-					return response.toString();		
+					return obj.toString();		
 					}
 }
