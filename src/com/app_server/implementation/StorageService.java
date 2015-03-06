@@ -50,7 +50,7 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT * FROM user WHERE pseudo = ? AND password = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT * FROM User WHERE pseudo = ? AND password = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			//System.out.println(query);
@@ -108,7 +108,7 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email FROM user WHERE pseudo = ? AND password = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email FROM User WHERE pseudo = ? AND password = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			//System.out.println(query);
@@ -156,7 +156,7 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into user(pseudo, password, first_name, last_name, email) values(?,?,?,?,?);");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email) values(?,?,?,?,?);");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			preparedStatement.setString( 3, first_name );
@@ -212,7 +212,7 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into tag(pseudo_owner, object_name, picture) values(?,?,?);");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(pseudo_owner, object_name, picture) values(?,?,?);");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, object_name);
 			preparedStatement.setString( 3, picture);					
@@ -250,7 +250,7 @@ public class StorageService {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM tag WHERE pseudo_owner = ? && object_name = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner = ? && object_name = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, object_name);					
 			//System.out.println(query);
@@ -303,7 +303,7 @@ public class StorageService {
 				e.printStackTrace();
 			}
 			if(StorageService.checkLogin(pseudo, password)){
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture FROM tag where pseudo_owner = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture FROM Tag where pseudo_owner = ?;");
 			preparedStatement.setString( 1, pseudo );						
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
@@ -326,5 +326,187 @@ public class StorageService {
 			}
 		}
 		return result;
+	}
+	
+	public static boolean modifyPseudo(String pseudo, String newPseudo) throws SQLException, Exception {
+		boolean modifyPseudo = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET pseudo = ? WHERE pseudo = ? ;");
+			preparedStatement.setString( 1, newPseudo );
+			preparedStatement.setString( 2, pseudo);								
+			int records = preparedStatement.executeUpdate();			
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyPseudo = true;
+			}
+		} catch (SQLException sqle) {
+			//sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			//e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyPseudo;
+	}
+	
+	
+	public static boolean modifyFirstName(String pseudo, String newFirstName) throws SQLException, Exception {
+		boolean modifyFirstName = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET first_name = ? WHERE pseudo = ? ;");
+			preparedStatement.setString( 1, newFirstName );
+			preparedStatement.setString( 2, pseudo);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyFirstName = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyFirstName;
+	}
+	
+	public static boolean modifyLastName(String pseudo, String newLastName) throws SQLException, Exception {
+		boolean modifyLastName = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET last_name = ? WHERE pseudo = ? ;");
+			preparedStatement.setString( 1, newLastName );
+			preparedStatement.setString( 2, pseudo);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyLastName = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyLastName;
+	}
+	
+	public static boolean modifyPassword(String pseudo, String newPassword) throws SQLException, Exception {
+		boolean modifyPassword = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE user SET password = ? WHERE pseudo = ? ;");
+			preparedStatement.setString( 1, newPassword );
+			preparedStatement.setString( 2, pseudo);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyPassword = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyPassword;
+	}
+	
+	
+	public static boolean modifyEMailAdress(String pseudo, String newEMailAdress) throws SQLException, Exception {
+		boolean modifyEMailAdress = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET email = ? WHERE pseudo = ? ;");
+			preparedStatement.setString( 1, newEMailAdress );
+			preparedStatement.setString( 2, pseudo);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyEMailAdress = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyEMailAdress;
 	}
 }

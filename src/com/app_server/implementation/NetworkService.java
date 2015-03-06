@@ -15,6 +15,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.app_server.data.Account;
 import com.app_server.data.Tag;
+import com.app_server.exceptions.IllegalFieldException;
 import com.app_server.utilities.Utilities;
 
 //Path: http://localhost/app_server/ns
@@ -23,12 +24,12 @@ public class NetworkService {
 	
 	// HTTP Get Method
 		@GET 
-		// Path: http://localhost:8080/app_server/ns/dologin
+		// Path: http://92.222.33.38:8080/app_server/ns/dologin
 		@Path("/dologin")
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/ns/dologin?pseudo=abc&password=xyz
-		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/dologin?pseudo=abc&password=xyz
+		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws IllegalFieldException, Exception{
 			String response = "";
 			Account account;
 			if(StorageService.checkLogin(pseudo,password)){
@@ -54,11 +55,11 @@ public class NetworkService {
 		
 		// HTTP Get Method
 		@GET 
-		// Path: http://localhost:8080/app_server/ns/doregister
+		// Path: http://92.222.33.38:8080/app_server/ns/doregister
 		@Path("/doregister")  
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/doregister?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
 		public String doRegister(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email){
 			String response = "";
 			//System.out.println("Inside doRegister "+pseudo+"  "+password);
@@ -81,12 +82,10 @@ public class NetworkService {
 			int result = 3;
 			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){ // I still use my utilities not the mutual ones
 				try {
-					if(StorageService.insertUser(pseudo, password, first_name, last_name, email)){
-						// System.out.println("RegisterUSer if");
+					if(StorageService.insertUser(pseudo, password, first_name, last_name, email)){						
 						result = 0;
 					}
-				} catch(SQLException sqle){
-					//System.out.println("RegisterUSer catch sqle");
+				} catch(SQLException sqle){					
 					//When Primary key violation occurs that means user is already registered
 					if(sqle.getErrorCode() == 1062){
 						result = 1;
@@ -97,8 +96,7 @@ public class NetworkService {
 						result = 2;
 					}
 				}
-				catch (Exception e) {
-					// TODO Auto-generated catch block
+				catch (Exception e) {					
 					System.out.println("Inside registerUser catch e ");
 					result = 3;
 				}
@@ -115,90 +113,62 @@ public class NetworkService {
 	@Path("/addtag")
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
-	// Query parameters are parameters: http://localhost:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
+	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
 	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
 		String response = "";
-		if (StorageService.checkLogin(pseudo, password)){
-			if(checkCredentials(pseudo, object_name, picture)){
-				response = Utilities.constructJSON("addtag",true);
+		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)&&Utilities.isNotNull(picture)){
+			if (StorageService.checkLogin(pseudo, password)){			
+				if(StorageService.insertTag(pseudo, object_name, picture)){
+					response = Utilities.constructJSON("addtag",true);
+				}else{
+					response = Utilities.constructJSON("addtag", false, "A problem has occured");
+				}
 			}else{
-				response = Utilities.constructJSON("addtag", false, "A problem has occured");
+				response = Utilities.constructJSON("addtag", false, "Wrong combination pseudo/password");
 			}
-		}else{
-			response = Utilities.constructJSON("addtag", false, "Wrong combination pseudo/password");
+		}
+		else {
+			response = Utilities.constructJSON("addtag", false, "Information incomplete");
 		}
 		
 	return response;		
 	}
 	
-	private boolean checkCredentials(String pseudo, String object_name, String picture){
-		System.out.println("Inside checkCredentials");
-		boolean result = false;
-		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)&&Utilities.isNotNull(picture)){
-			try {
-				result = StorageService.insertTag(pseudo, object_name, picture);
-				//System.out.println("Inside checkCredentials try "+result);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//System.out.println("Inside checkCredentials catch");
-				result = false;
-			}
-		}else{
-			//System.out.println("Inside checkCredentials else");
-			result = false;
-		}
-			
-		return result;
-	}
 	
 	// HTTP Get Method
 			@GET 
-			// Path: http://localhost/<appln-folder-name>/tag/deletetag
+			// Path: http://92.222.33.38:8080/app_server/ns/deletetag
 			@Path("/deletetag")
 			// Produces JSON as response
 			@Produces(MediaType.APPLICATION_JSON) 
-			// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
 			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name) throws Exception{
 				String response = "";
-				if (StorageService.checkLogin(pseudo, password)){
-					if(checkDeleteTag(pseudo, object_name)){
-						response = Utilities.constructJSON("deletetag",true);
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
+					if (StorageService.checkLogin(pseudo, password)){
+						if(StorageService.deleteTag(pseudo, object_name)){
+							response = Utilities.constructJSON("deletetag",true);
+						}else{
+							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+						}
 					}else{
-						response = Utilities.constructJSON("deletetag", false, "A problem has occured");
+						response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
 					}
-				}else{
-					response = Utilities.constructJSON("deletetag", false, "Wrong combination pseudo/password");
+				}
+				else {
+					response = Utilities.constructJSON("addtag", false, "Information incomplete");
 				}
 			return response;		
 			}
-			
-			private boolean checkDeleteTag(String pseudo, String object_name){
-				System.out.println("Inside checkDeleteTag");
-				boolean result = false;
-				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
-					try {
-						result = StorageService.deleteTag(pseudo, object_name);
-						//System.out.println("Inside checkDeleteTag try "+result);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						//System.out.println("Inside checkDeleteTag catch");
-						result = false;
-					}
-				}else{
-					//System.out.println("Inside checkDeleteTag else");
-					result = false;
-				}
 					
-				return result;
-			}
 							
 		// HTTP Get Method
 		@GET 
-		// Path: http://localhost/<appln-folder-name>/tag/deletetag
+		// Path: http://92.222.33.38:8080/app_server/ns/retrievetag
 		@Path("/retrievetag")
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://localhost/<appln-folder-name>/tag/deletetag?pseudo=abc&password=abc&object_name=xyz
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/retrievetag?pseudo=abc&password=abc
 		public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
 			JSONObject response = new JSONObject();
 			response.put("tag", "retrieveTags");
@@ -223,4 +193,35 @@ public class NetworkService {
 			}
 			return response.toString();		
 		}
+		
+		// HTTP Get Method
+				@GET 
+				// Path: http://92.222.33.38:8080/app_server/ns/modifyemail
+				@Path("/modifyemail")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON) 
+				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword=xyz&newFirstName=abc&newLastName=abc&newEmail=abc@xyz.com
+				public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newEmail") String newEmail) throws Exception{
+					String response = "";
+					boolean status = true;
+					Account account = null;
+					if(StorageService.checkLogin(pseudo,password)){
+						account = StorageService.doLogin(pseudo, password);				
+						if ((account.getEMailAddress()!=newEmail)&&(StorageService.modifyEMailAdress(pseudo, newEmail)))
+							account.setMailAddress(newEmail);
+						
+						JSONObject obj = new JSONObject();
+						try {
+							obj.put("tag", "login");
+							obj.put("status",status);		
+							obj.put("email", account.getEMailAddress());
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+						}
+						return obj.toString();	
+					}else{
+						response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
+						return response;
+					}	
+				}			
 }
