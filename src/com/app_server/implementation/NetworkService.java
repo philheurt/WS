@@ -19,11 +19,17 @@ import com.app_server.data.Account;
 import com.app_server.data.Tag;
 import com.app_server.utilities.Utilities;
 
+
 //Path: http://localhost/app_server/ns
 @Path("/ns")
 public class NetworkService {
 	
-
+/*   *********** gestion d'exception
+ * NetworkServiceException e0 = new NetworkServiceException("Wrong combination pseudo/password");
+	NetworkServiceException e1 = new NetworkServiceException("Error with database");
+	NetworkServiceException e2 = new NetworkServiceException("You are already registered");
+	NetworkServiceException e3 = new NetworkServiceException("Special Characters are not allowed in Pseudo and Password");
+		*/
 
 	// HTTP Get Method
 			@GET 
@@ -51,7 +57,7 @@ public class NetworkService {
 				}else{
 					obj.put("tag", "login");
 					obj.put("status",false);
-					obj.put("Error msg","Incorrect Email or Password");
+					obj.put("IntError",0);
 					return obj.toString();
 				}	
 			}
@@ -93,7 +99,7 @@ public class NetworkService {
 				}else{
 					obj.put("tag", "modifyEMailAddress");
 					obj.put("status",false);
-					obj.put("Error msg","Incorrect Email or Password");
+					obj.put("IntError",0);
 					return obj.toString();
 				}	
 			}
@@ -122,7 +128,7 @@ public class NetworkService {
 			}else{
 				obj.put("tag", "modifyPassword");
 				obj.put("status",false);
-				obj.put("Error msg","Incorrect Email or Password");
+				obj.put("IntError",0);
 				return obj.toString();
 			}	
 		}
@@ -178,13 +184,12 @@ public class NetworkService {
 					obj.put("status",true);	
 				}else if(retCode == 1){
 					obj.put("status",false);
-					obj.put("Error msg","You are already registered");
+					obj.put("IntError",2);
 				}else if(retCode == 2){
 					obj.put("status",false);
-					obj.put("Error msg","Special Characters are not allowed in Pseudo and Password");
+					obj.put("IntError",3);
 				}else if(retCode == 3){
 					obj.put("status",false);
-					obj.put("Error msg","Error occured");
 				}
 			} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -243,11 +248,11 @@ public class NetworkService {
 						obj.put("status", true);
 					}else{
 						obj.put("status", false);
-						obj.put("Error msg", "A problem has occure");
+						obj.put("IntError", 1);
 					}
 				}else{
 					obj.put("status", false);
-					obj.put("Error msg", "Wrong combination pseudo/password");
+					obj.put("IntError",0);
 				}
 				
 			return obj.toString();		
@@ -288,11 +293,11 @@ public class NetworkService {
 								obj.put("status",  true);
 							}else{
 								obj.put("status", false);
-								obj.put("Error msg", "Problem with database");
+								obj.put("IntError",1);
 							}
 						}else{
 							obj.put("status", false);
-							obj.put("Error msg", "Wrong combination pseudo/password");
+							obj.put("IntError",0);
 						}
 					return obj.toString();		
 					}
@@ -346,7 +351,7 @@ public class NetworkService {
 							
 						}else{
 							obj.put("status", false);
-							obj.put("Error msg", "Wrong combination pseudo/password");
+							obj.put("IntError",0);
 						}
 					return obj.toString();		
 					}
