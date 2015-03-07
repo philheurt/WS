@@ -31,7 +31,7 @@ public class NetworkService {
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/login?pseudo=abc&password=xyz
 		public String doLogin(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws IllegalFieldException, Exception{
 			Account account;
-			int returnCode = 1;
+			int returnCode = 0;
 			JSONObject obj = new JSONObject();
 			if(StorageService.checkLogin(pseudo,password)){
 			account = StorageService.doLogin(pseudo, password);
@@ -46,7 +46,8 @@ public class NetworkService {
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 				}				
-			}else{				
+			}else{	
+				returnCode = 1;
 				try {
 					obj.put("tag", "login");
 					obj.put("returncode", returnCode);
