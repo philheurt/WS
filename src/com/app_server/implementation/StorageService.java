@@ -439,4 +439,40 @@ public class StorageService {
 		}
 		return modifyEMailAdress;
 	}
+	
+	public static boolean modifyTagName(int id, String newObjectName) throws SQLException, Exception {
+		boolean modifyTagName = false;
+		Connection dbConn = null;
+		try {
+			try {
+				dbConn = StorageService.createConnection();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET object_name = ? WHERE tag_id = ?;");
+			preparedStatement.setString( 1, newObjectName );
+			preparedStatement.setInt( 2, id);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyTagName = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			// TODO Auto-generated catch block
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyTagName;
+	}
 }
