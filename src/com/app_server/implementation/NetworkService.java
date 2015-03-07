@@ -114,11 +114,11 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
+	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("id") int id, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
 		String response = "";
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)&&Utilities.isNotNull(picture)){
 			if (StorageService.checkLogin(pseudo, password)){			
-				if(StorageService.insertTag(pseudo, object_name, picture)){
+				if(StorageService.insertTag(id, pseudo, object_name, picture)){
 					response = Utilities.constructJSON("addtag",true);
 				}else{
 					response = Utilities.constructJSON("addtag", false, "A problem has occured");
@@ -142,11 +142,11 @@ public class NetworkService {
 			// Produces JSON as response
 			@Produces(MediaType.APPLICATION_JSON) 
 			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
-			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("object_name") String object_name) throws Exception{
+			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") int id) throws Exception{
 				String response = "";
-				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
-						if(StorageService.deleteTag(pseudo, object_name)){
+						if(StorageService.deleteTag(pseudo, id)){
 							response = Utilities.constructJSON("deletetag",true);
 						}else{
 							response = Utilities.constructJSON("deletetag", false, "A problem has occured");
@@ -201,7 +201,7 @@ public class NetworkService {
 				// Produces JSON as response
 				@Produces(MediaType.APPLICATION_JSON) 
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword=xyz&newFirstName=abc&newLastName=abc&newEmail=abc@xyz.com
-				public String modifyAccount(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newEmail") String newEmail) throws Exception{
+				public String modifyEmail(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newemail") String newEmail) throws Exception{
 					String response = "";
 					boolean status = true;
 					Account account = null;
@@ -223,5 +223,40 @@ public class NetworkService {
 						response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
 						return response;
 					}	
-				}			
+				}	
+				
+				// HTTP Get Method
+				@GET 
+				// Path: http://92.222.33.38:8080/app_server/ns/modifypassword
+				@Path("/modifypassword")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON) 
+				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifypassword?pseudo=abc&password=xyz&newpassword=abc
+				public String modifyPassword(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("newpassword") String newPassword) throws Exception{
+					String response = "";
+					boolean status = true;
+					Account account = null;
+					if(StorageService.checkLogin(pseudo,password)){
+						account = StorageService.doLogin(pseudo, password);				
+						if ((password != newPassword)&&(StorageService.modifyPassword(pseudo, newPassword)))
+						{
+						JSONObject obj = new JSONObject();
+						try {
+							obj.put("tag", "login");
+							obj.put("status",status);		
+							obj.put("email", account.getEMailAddress());
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+						}
+						return obj.toString();	
+						
+						}else{
+							response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
+							return response;
+						}	
+					}else{
+						response = Utilities.constructJSON("modifyAccount", false, "Incorrect Pseudo/Password");
+						return response;
+					}	
+			}	
 }
