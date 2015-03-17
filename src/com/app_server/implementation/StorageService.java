@@ -20,17 +20,11 @@ public class StorageService {
 	 * @throws Exception
 	 */
 	
-	@SuppressWarnings("finally")
 	public static Connection createConnection() throws Exception {
 		Connection con = null;
-		try {
 			Class.forName(Constants.dbClass);
 			con = DriverManager.getConnection(Constants.dbUrl, Constants.dbUser, Constants.dbPwd);
-		} catch (Exception e) {
-			throw e;
-		} finally {
 			return con;
-		}
 	}
 	/**
      * Method to check whether pseudo and password combination are correct
@@ -102,12 +96,7 @@ public class StorageService {
 		Connection dbConn = null;
 		Account account = null;
 		try {
-			try {
-				dbConn = StorageService.createConnection();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			dbConn = StorageService.createConnection();		
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email FROM User WHERE pseudo = ? AND password = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
@@ -117,6 +106,7 @@ public class StorageService {
 				account = map(rs);
 			}
 		} catch (SQLException sqle) {
+			dbConn.close();
 			throw sqle;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -202,7 +192,7 @@ public class StorageService {
 	 * 
 	 */
 	
-	public static boolean insertTag(int id, String pseudo, String object_name, String picture) throws SQLException, Exception {
+	public static boolean insertTag(String id, String pseudo, String object_name, String picture) throws SQLException, Exception {
 		boolean insertStatus = false;
 		Connection dbConn = null;
 		try {
@@ -213,7 +203,7 @@ public class StorageService {
 				e.printStackTrace();
 			}
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(tag_id,pseudo_owner, object_name, picture) values(?,?,?,?);");
-			preparedStatement.setInt(1, id);
+			preparedStatement.setString(1, id);
 			preparedStatement.setString( 2, pseudo );
 			preparedStatement.setString( 3, object_name);
 			preparedStatement.setString( 4, picture);					
@@ -241,7 +231,7 @@ public class StorageService {
 		return insertStatus;
 	}
 	
-	public static boolean deleteTag(String pseudo, int id) throws SQLException, Exception {
+	public static boolean deleteTag(String pseudo, String id) throws SQLException, Exception {
 		boolean deleteStatus = false;
 		Connection dbConn = null;
 		try {
@@ -253,7 +243,7 @@ public class StorageService {
 			}
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner = ? && tag_id = ?;");
 			preparedStatement.setString( 1, pseudo );
-			preparedStatement.setInt( 2, id);					
+			preparedStatement.setString( 2, id);					
 			//System.out.println(query);
 			int records = preparedStatement.executeUpdate();
 			//System.out.println(records);
@@ -440,7 +430,7 @@ public class StorageService {
 		return modifyEMailAdress;
 	}
 	
-	public static boolean modifyTagName(int id, String newObjectName) throws SQLException, Exception {
+	public static boolean modifyTagName(String id, String newObjectName) throws SQLException, Exception {
 		boolean modifyTagName = false;
 		Connection dbConn = null;
 		try {
@@ -452,7 +442,7 @@ public class StorageService {
 			}
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET object_name = ? WHERE tag_id = ?;");
 			preparedStatement.setString( 1, newObjectName );
-			preparedStatement.setInt( 2, id);					
+			preparedStatement.setString( 2, id);					
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
 			if (records > 0) {
