@@ -370,14 +370,15 @@ public class StorageService {
 		return modifyEMailAdress;
 	}
 	
-	public static boolean modifyTagName(String id, String newObjectName) throws SQLException, Exception {
+	public static boolean modifyTagName(String id, String newObjectName, String pseudo) throws SQLException, Exception {
 		boolean modifyTagName = false;
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET object_name = ? WHERE tag_id = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET object_name = ? WHERE tag_id = ? and pseudo_owner = ?;");
 			preparedStatement.setString( 1, newObjectName );
-			preparedStatement.setString( 2, id);					
+			preparedStatement.setString( 2, id);
+			preparedStatement.setString( 3, pseudo);
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
 			if (records > 0) {

@@ -406,7 +406,6 @@ public class NetworkService {
 				@Produces(MediaType.APPLICATION_JSON) 
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifypassword?pseudo=abc&password=xyz&newpassword=abc
 				public String modifyObjectName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("new_object_name") String newObjectName) throws Exception{
-					int returnCode = 0;
 					JSONObject obj = new JSONObject();
 					obj.put("tag", TagCode.MODIFY_OBJECT_NAME);
 					
@@ -428,7 +427,7 @@ public class NetworkService {
 								else 
 							
 					if(StorageService.checkLogin(pseudo,password)){										
-						if (StorageService.modifyTagName(id, newObjectName))
+						if (StorageService.modifyTagName(id, newObjectName, pseudo))
 						{						
 						try {
 							obj.put("returncode", ErrorCode.NO_ERROR);		
