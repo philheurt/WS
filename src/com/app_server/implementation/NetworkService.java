@@ -32,7 +32,7 @@ public class NetworkService {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/login?pseudo=abc&password=xyz
-		public String login(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws IllegalFieldException, Exception{
+		public String login(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws IllegalFieldException, Exception, JSONException{
 			Account account;
 			JSONObject obj = new JSONObject();
 			obj.put("tag", TagCode.LOGIN);
@@ -48,21 +48,14 @@ public class NetworkService {
 			if(StorageService.checkLogin(pseudo,password)){
 			account = StorageService.doLogin(pseudo, password);
 			
-				try {
 					obj.put("returnCode", ErrorCode.NO_ERROR);
 					obj.put("pseudo", account.getPseudo());
 					obj.put("first_name", account.getFirstName());
 					obj.put("last_name", account.getLastName());
 					obj.put("email", account.getEMailAddress());
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-				}				
+			
 			}else{	
-				try {
-					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-				}			
+					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);			
 							
 			}
 			return obj.toString();
@@ -113,7 +106,6 @@ public class NetworkService {
 					} 
 					//When special characters are used in pseudo, password, first_name, last_name, email)
 					else if(sqle.getErrorCode() == 1064){
-						//System.out.println(sqle.getErrorCode());
 						returnCode = ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER;
 					}
 				}
@@ -140,7 +132,7 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("id") String id, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception{
+	public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("id") String id, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if(!FieldVerifier.verifyName(pseudo)){
@@ -163,32 +155,16 @@ public class NetworkService {
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
 				if(StorageService.insertTag(id, pseudo, object_name, picture)){
-					try {
-						obj.put("returncode", ErrorCode.NO_ERROR);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}		
+						obj.put("returncode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
-					try {
-						obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}	
+						obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);	
 				}
 			}else{ // wrong pseudo/password combination
-				try {
-					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-				}	
+					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
 			}
 		}
 		else { // information incomplete
-			try {
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-			}	
+				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
 		}
 		
 	return obj.toString();		
@@ -202,7 +178,7 @@ public class NetworkService {
 			// Produces JSON as response
 			@Produces(MediaType.APPLICATION_JSON) 
 			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
-			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id) throws Exception{
+			public String deleteTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id) throws Exception, JSONException{
 				JSONObject obj = new JSONObject();
 				obj.put("tag", TagCode.DELETE_TAG);
 				if(!FieldVerifier.verifyName(pseudo)){
@@ -220,33 +196,17 @@ public class NetworkService {
 							
 				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
-						if(StorageService.deleteTag(pseudo, id)){
-							try {							
-								obj.put("returncode", ErrorCode.NO_ERROR);
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}	
+						if(StorageService.deleteTag(pseudo, id)){						
+								obj.put("returncode", ErrorCode.NO_ERROR);	
 						}else{ // issue at DB level
-							try {
 								obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}	
 						}
 					}else{ // wrong pseudo/password combination
-						try {
-							obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-						}	
+							obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
 					}
 				}
 				else { // information incomplete
-					try {
-						obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}	
+						obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
 				}
 			return obj.toString();		
 			}
@@ -259,7 +219,7 @@ public class NetworkService {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/retrievetag?pseudo=abc&password=abc
-		public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception{
+		public String retrieveTags(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password) throws Exception, JSONException{
 			JSONObject obj = new JSONObject();
 			obj.put("tag", TagCode.RETRIEVE_TAG);
 			if(!FieldVerifier.verifyName(pseudo)){
@@ -303,7 +263,7 @@ public class NetworkService {
 				// Produces JSON as response
 				@Produces(MediaType.APPLICATION_JSON) 
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword=xyz&newFirstName=abc&newLastName=abc&newEmail=abc@xyz.com
-				public String modifyEmail(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("new_email") String newEmail) throws Exception{
+				public String modifyEmail(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("new_email") String newEmail) throws Exception, JSONException{
 					JSONObject obj = new JSONObject();
 					obj.put("tag", TagCode.MODIFY_EMAIL);
 					Account account = null;
@@ -324,26 +284,13 @@ public class NetworkService {
 						account = StorageService.doLogin(pseudo, password);				
 						if ((account.getEMailAddress()!=newEmail)&&(StorageService.modifyEMailAdress(pseudo, newEmail))){
 							account.setMailAddress(newEmail);												
-						try {
 							obj.put("returncode",ErrorCode.NO_ERROR);		
-							obj.put("email", account.getEMailAddress());
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-						}
-					
+							obj.put("email", account.getEMailAddress());					
 					}else{
-							try {
-								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);								
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}									
+								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);																
 						}
 					}else{
-					try {
-						obj.put("returncode", ErrorCode.UNKNOWN_ERROR);								
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}			
+						obj.put("returncode", ErrorCode.UNKNOWN_ERROR);											
 				
 				}
 					return obj.toString();
@@ -356,7 +303,7 @@ public class NetworkService {
 				// Produces JSON as response
 				@Produces(MediaType.APPLICATION_JSON) 
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifypassword?pseudo=abc&password=xyz&newpassword=abc
-				public String modifyPassword(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("new_password") String newPassword) throws Exception{
+				public String modifyPassword(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("new_password") String newPassword) throws Exception, JSONException{
 					JSONObject obj = new JSONObject();
 					obj.put("tag", TagCode.MODIFY_OBJECT_NAME);
 					
@@ -375,24 +322,12 @@ public class NetworkService {
 					if(StorageService.checkLogin(pseudo,password)){
 						if ((password != newPassword)&&(StorageService.modifyPassword(pseudo, newPassword))){
 						
-							try {
 								obj.put("returncode",ErrorCode.NO_ERROR);										
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}
 						}else{
-							try {
-								obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);								
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}									
+								obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);																	
 						}
 					}else{
-					try {
-						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);								
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}			
+						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);											
 				
 				}
 					return obj.toString();
@@ -405,7 +340,7 @@ public class NetworkService {
 				// Produces JSON as response
 				@Produces(MediaType.APPLICATION_JSON) 
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifypassword?pseudo=abc&password=xyz&newpassword=abc
-				public String modifyObjectName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("new_object_name") String newObjectName) throws Exception{
+				public String modifyObjectName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("new_object_name") String newObjectName) throws Exception, JSONException{
 					JSONObject obj = new JSONObject();
 					obj.put("tag", TagCode.MODIFY_OBJECT_NAME);
 					
@@ -429,25 +364,13 @@ public class NetworkService {
 					if(StorageService.checkLogin(pseudo,password)){										
 						if (StorageService.modifyTagName(id, newObjectName, pseudo))
 						{						
-						try {
 							obj.put("returncode", ErrorCode.NO_ERROR);		
-							obj.put("newobjectname", newObjectName);
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-						}												
+							obj.put("newobjectname", newObjectName);												
 						}else{
-							try {
-								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);								
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}									
+								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);																	
 						}
 					}else{
-					try {
-						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);								
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}			
+						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);											
 				
 				}
 					return obj.toString();
