@@ -16,6 +16,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -33,28 +35,7 @@ import com.app_server.utilities.Utilities;
 @Path("/ns")
 public class NetworkService {
 	
-	private void writeToFile(InputStream uploadedInputStream,
-			String uploadedFileLocation) {
-	 
-			try {
-				OutputStream out = new FileOutputStream(new File(
-						uploadedFileLocation));
-				int read = 0;
-				byte[] bytes = new byte[1024];
-	 
-				out = new FileOutputStream(new File(uploadedFileLocation));
-				while ((read = uploadedInputStream.read(bytes)) != -1) {
-					out.write(bytes, 0, read);
-				}
-				out.flush();
-				out.close();
-			} catch (IOException e) {
-	 
-				e.printStackTrace();
-			}
-	 
-		}
-	
+
 	// HTTP Post Method
 			@POST 
 			// Path: http://92.222.33.38:8080/app_server/ns/login
@@ -73,7 +54,23 @@ public class NetworkService {
 				// adapt to support
 				String uploadedFileLocation = "C:\\uploaded\\" + pseudo + "_" + objectName;
 
-				writeToFile(uploadedInputStream, uploadedFileLocation);
+				// writeToFile(uploadedInputStream, uploadedFileLocation);
+				try {
+					OutputStream out = new FileOutputStream(new File(
+							uploadedFileLocation));
+					int read = 0;
+					byte[] bytes = new byte[1024];
+		 
+					out = new FileOutputStream(new File(uploadedFileLocation));
+					while ((read = uploadedInputStream.read(bytes)) != -1) {
+						out.write(bytes, 0, read);
+					}
+					out.flush();
+					out.close();
+				} catch (IOException e) {
+		 
+					e.printStackTrace();
+				}
 				
 				JSONObject obj = new JSONObject();
 				
@@ -84,6 +81,26 @@ public class NetworkService {
 				return obj.toString();
 			}
 	
+			
+			// HTTP Get Method
+			@GET 
+			// Path: http://92.222.33.38:8080/app_server/ns/download
+			@Path("/download")
+			// Produces JSON as response
+			@Produces("image/jpg") 
+			public Response download(@QueryParam("pseudo") String pseudo, 
+					@QueryParam("password") String password,
+					@QueryParam("objectName") String objectName) 
+					throws Exception, JSONException {
+				
+				File image = new File("C\\uploaded\\"+pseudo+"_"+objectName);
+				 
+				ResponseBuilder response = Response.ok((Object) image);
+				response.header("Content-Disposition",
+					"attachment; filename=image_from_server.jpg");
+				return response.build();
+			}
+			
 	
 	// HTTP Get Method
 		@GET 

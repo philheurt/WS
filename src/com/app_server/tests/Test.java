@@ -17,7 +17,7 @@ public class Test {
 
 			NetworkService NS = new NetworkService();
 			try {
-				NS.doRegister("josé", "secret", "abc", "abc", "abc");
+				NS.register("josé", "secret", "abc", "abc", "abc");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
