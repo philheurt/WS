@@ -1,9 +1,17 @@
 package com.app_server.implementation;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -24,6 +32,58 @@ import com.app_server.utilities.Utilities;
 //Path: http://localhost/app_server/ns
 @Path("/ns")
 public class NetworkService {
+	
+	private void writeToFile(InputStream uploadedInputStream,
+			String uploadedFileLocation) {
+	 
+			try {
+				OutputStream out = new FileOutputStream(new File(
+						uploadedFileLocation));
+				int read = 0;
+				byte[] bytes = new byte[1024];
+	 
+				out = new FileOutputStream(new File(uploadedFileLocation));
+				while ((read = uploadedInputStream.read(bytes)) != -1) {
+					out.write(bytes, 0, read);
+				}
+				out.flush();
+				out.close();
+			} catch (IOException e) {
+	 
+				e.printStackTrace();
+			}
+	 
+		}
+	
+	// HTTP Post Method
+			@POST 
+			// Path: http://92.222.33.38:8080/app_server/ns/login
+			@Path("/upload")
+			// Receives data
+			@Consumes(MediaType.MULTIPART_FORM_DATA)
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+
+			public String upload(@FormParam("pseudo") String fileName, 
+					@FormParam("password") String pseudo, 
+					@FormParam("objectName") String objectName, 
+					@FormParam("file") InputStream uploadedInputStream) 
+			        throws Exception, JSONException{
+
+				// adapt to support
+				String uploadedFileLocation = "C:\\uploaded\\" + pseudo + "_" + objectName;
+
+				writeToFile(uploadedInputStream, uploadedFileLocation);
+				
+				JSONObject obj = new JSONObject();
+				
+				obj.put("tag", "upload");
+				
+				obj.put("IntError", 0);
+				
+				return obj.toString();
+			}
+	
 	
 	// HTTP Get Method
 		@GET 
