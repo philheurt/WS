@@ -13,6 +13,7 @@ public class ErrorCode {
 	public final static int MISSING_TAG_NAME = 7;
 	public final static int MISSING_NEW_PASSWORD = 8;
 	public final static int MISSING_NEW_OBJECT_NAME = 9;
+	public final static int MISSING_PROFILE_NAME = 15;
 	
 	public final static int INVALID_PSEUDO_PASSWORD_COMBINATION = 10;
 	public final static int USER_ALREADY_REGISTERED = 11;

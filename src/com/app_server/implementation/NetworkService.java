@@ -55,7 +55,7 @@ public class NetworkService {
 					obj.put("email", account.getEMailAddress());
 			
 			}else{	
-					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);			
+					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);			
 							
 			}
 			return obj.toString();
@@ -69,8 +69,8 @@ public class NetworkService {
 		// Produces JSON as response
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/register?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
-		public String register(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email) throws JSONException{					
-			int returnCode = 3;
+		public String register(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email) throws Exception{					
+			int returnCode = ErrorCode.DATABASE_ACCESS_ISSUE;
 			JSONObject obj = new JSONObject();
 			obj.put("tag", TagCode.REGISTER);
 			if(!FieldVerifier.verifyName(pseudo)){
@@ -93,11 +93,13 @@ public class NetworkService {
 								obj.put("returnCode", ErrorCode.MISSING_EMAIL);
 							}
 							else 
-								
-			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){ // I still use my utilities not the mutual ones
+										
 				try {
 					if(StorageService.insertUser(pseudo, password, first_name, last_name, email)){						
 						returnCode = ErrorCode.NO_ERROR;
+					}else{
+						returnCode = ErrorCode.DATABASE_ACCESS_ISSUE;			
+						
 					}
 				} catch(SQLException sqle){					
 					//When Primary key violation occurs that means user is already registered
@@ -109,19 +111,8 @@ public class NetworkService {
 						returnCode = ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER;
 					}
 				}
-				catch (Exception e) {					
-					System.out.println("Inside doRegister catch e ");					
-				}
-			}else{
-				System.out.println("Inside doRegister else");				
-			}	
-								
-				try {
-					
-					obj.put("returncode", returnCode);
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-				}			
+													
+					obj.put("returncode", returnCode);		
 			return obj.toString();
 					
 		}
@@ -155,12 +146,12 @@ public class NetworkService {
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
 				if(StorageService.insertTag(id, pseudo, object_name, picture)){
-						obj.put("returncode", ErrorCode.NO_ERROR);		
+						obj.put("returnCode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
-						obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
 				}
 			}else{ // wrong pseudo/password combination
-					obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
 			}
 		}
 		else { // information incomplete
@@ -197,16 +188,16 @@ public class NetworkService {
 				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
 						if(StorageService.deleteTag(pseudo, id)){						
-								obj.put("returncode", ErrorCode.NO_ERROR);	
+								obj.put("returnCode", ErrorCode.NO_ERROR);	
 						}else{ // issue at DB level
-								obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 						}
 					}else{ // wrong pseudo/password combination
-							obj.put("returncode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+							obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
 					}
 				}
 				else { // information incomplete
-						obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+						obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
 				}
 			return obj.toString();		
 			}
@@ -284,13 +275,13 @@ public class NetworkService {
 						account = StorageService.doLogin(pseudo, password);				
 						if ((account.getEMailAddress()!=newEmail)&&(StorageService.modifyEMailAdress(pseudo, newEmail))){
 							account.setMailAddress(newEmail);												
-							obj.put("returncode",ErrorCode.NO_ERROR);		
+							obj.put("returnCode",ErrorCode.NO_ERROR);		
 							obj.put("email", account.getEMailAddress());					
 					}else{
-								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);																
+								obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																
 						}
 					}else{
-						obj.put("returncode", ErrorCode.UNKNOWN_ERROR);											
+						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
 				
 				}
 					return obj.toString();
@@ -322,12 +313,12 @@ public class NetworkService {
 					if(StorageService.checkLogin(pseudo,password)){
 						if ((password != newPassword)&&(StorageService.modifyPassword(pseudo, newPassword))){
 						
-								obj.put("returncode",ErrorCode.NO_ERROR);										
+								obj.put("returnCode",ErrorCode.NO_ERROR);										
 						}else{
-								obj.put("returncode", ErrorCode.DATABASE_ACCESS_ISSUE);																	
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);																	
 						}
 					}else{
-						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);											
+						obj.put("returnCode",ErrorCode.UNKNOWN_ERROR);											
 				
 				}
 					return obj.toString();
@@ -364,16 +355,163 @@ public class NetworkService {
 					if(StorageService.checkLogin(pseudo,password)){										
 						if (StorageService.modifyTagName(id, newObjectName, pseudo))
 						{						
-							obj.put("returncode", ErrorCode.NO_ERROR);		
+							obj.put("returnCode", ErrorCode.NO_ERROR);		
 							obj.put("newobjectname", newObjectName);												
 						}else{
-								obj.put("returncode",ErrorCode.DATABASE_ACCESS_ISSUE);																	
+								obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																	
 						}
 					}else{
-						obj.put("returncode",ErrorCode.UNKNOWN_ERROR);											
+						obj.put("returnCode",ErrorCode.UNKNOWN_ERROR);											
 				
 				}
 					return obj.toString();
 				}	
+				
+				// HTTP Get Method
+				@GET 
+				// Path: http://92.222.33.38:8080/app_server/ns/createprofile
+				@Path("/createprofile")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON) 
+				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/createprofile?pseudo=abc&password=xyz&profile_name=abc
+				public String createProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+					JSONObject obj = new JSONObject();
+					obj.put("tag", TagCode.CREATE_PROFILE);
+					if(!FieldVerifier.verifyName(pseudo)){
+						obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+					}
+					else 
+						if(!FieldVerifier.verifyName(password)){
+							obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+						}
+						else 
+							if(!FieldVerifier.verifyEMailAddress(profileName)){
+								obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+							}
+							else 
+							
+					if(StorageService.checkLogin(pseudo,password)){			
+						if (StorageService.insertProfile(pseudo, profileName)){
+							obj.put("returnCode", ErrorCode.NO_ERROR);	
+						}else{
+								obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																
+						}
+					}else{
+						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
+				
+				}
+					return obj.toString();
+				}	
+				
+				// HTTP Get Method
+				@GET 					
+				@Path("/addtagtoprofile")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON) 
+				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
+				public String addTagToProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("profile_name") String profileName, @QueryParam("id") String id) throws Exception, JSONException{
+					JSONObject obj = new JSONObject();
+					obj.put("tag", TagCode.ADD_TAG_TO_PROFILE);
+					if(!FieldVerifier.verifyName(pseudo)){
+						obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+					}
+					else						
+						if(!FieldVerifier.verifyName(password)){
+							obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+						}
+						else 
+							if(!FieldVerifier.verifyTagUID(id)){
+								obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+							}
+							else 
+									if(!FieldVerifier.verifyName(profileName)){
+										obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+									}
+									else 
+									
+					if(Utilities.isNotNull(pseudo) &&Utilities.isNotNull(profileName)){
+						if (StorageService.checkLogin(pseudo, password)){			
+							if(StorageService.insertTagToProfile(pseudo, profileName, id)){
+									obj.put("returnCode", ErrorCode.NO_ERROR);
+									ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
+									JSONArray arrayOfJsonTag = new JSONArray();
+
+									for(Tag tag : ListOfTag){
+										JSONObject tagJson = new JSONObject();
+										try {
+										tagJson.put("tag_id", tag.getUid());
+										tagJson.put("object_name", tag.getObjectName());
+										tagJson.put("picture", tag.getObjectImageName());
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+										}	
+										arrayOfJsonTag.put(tagJson);	
+										obj.put("listTags", arrayOfJsonTag);
+									}	
+							}else{ // problem at the DB level
+									obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+							}
+						}else{ // wrong pseudo/password combination
+								obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+						}
+					}
+					else { // information incomplete
+							obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+					}
+					
+				return obj.toString();		
+				}
+				
+				// HTTP Get Method
+				@GET 					
+				@Path("/retrieveprofile")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON) 
+				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/retrieveprofile?pseudo=abc&password=abc&profile_name=xyz
+				public String retrieveProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("profile_name") String profileName) throws Exception, JSONException{
+					JSONObject obj = new JSONObject();
+					obj.put("tag", TagCode.RETRIEVE_PROFILE);
+					if(!FieldVerifier.verifyName(pseudo)){
+						obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+					}
+					else						
+						if(!FieldVerifier.verifyName(password)){
+							obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+						}
+						else 
+								if(!FieldVerifier.verifyName(profileName)){
+									obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+								}
+								else 
+									
+					if(Utilities.isNotNull(pseudo) &&Utilities.isNotNull(profileName)){
+						if (StorageService.checkLogin(pseudo, password)){							
+									obj.put("returnCode", ErrorCode.NO_ERROR);
+									obj.put("profileName", profileName);
+									ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
+									JSONArray arrayOfJsonTag = new JSONArray();
+
+									for(Tag tag : ListOfTag){
+										JSONObject tagJson = new JSONObject();
+										try {
+										tagJson.put("tag_id", tag.getUid());
+										tagJson.put("object_name", tag.getObjectName());
+										tagJson.put("picture", tag.getObjectImageName());
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+										}	
+										arrayOfJsonTag.put(tagJson);	
+										obj.put("listTags", arrayOfJsonTag);
+									}		
+							
+						}else{ // wrong pseudo/password combination
+								obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);						
+						}
+					}else { // information incomplete
+						obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+					}
+					
+				return obj.toString();		
+				}
 				
 }
