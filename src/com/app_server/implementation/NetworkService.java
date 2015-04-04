@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
+
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -171,6 +172,8 @@ public class NetworkService {
 		
 	return obj.toString();		
 	}
+	
+	
 	
 	// HTTP POST Method
 	@POST 					
@@ -560,6 +563,92 @@ public class NetworkService {
 		
 	return obj.toString();		
 	}
+	
+	// HTTP POST Method
+		@POST 					
+		@Path("/addtagstoprofile")
+		@Consumes(MediaType.MULTIPART_FORM_DATA)
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON) 
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtagstoprofile
+			public String addTagsToProfile( @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("profileName") String profileName, @FormDataParam("jsonUIDs") String jsonUIDs) throws Exception, JSONException{
+			JSONObject obj = new JSONObject();
+			obj.put("tag", TagCode.ADD_TAG);
+			
+			ArrayList<String> listUIDs = new ArrayList<String>();
+			
+			//on interprète le json pour remplir listUIDs
+			JSONObject jsonTemp = new JSONObject(jsonUIDs);
+			int i = 0;
+			//on utilise que JSON.get(missing key) = NULL
+			while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
+				listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
+				i++;
+			}
+			
+			boolean bool = false; 
+			for(int i1=0; i1<listUIDs.size(); i1++) {
+				if(!FieldVerifier.verifyTagUID(listUIDs.get(i1))){
+					bool = true;
+				}
+			}
+			
+			if(!FieldVerifier.verifyName(pseudo)){
+				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+			}
+			else 
+				if(!FieldVerifier.verifyName(password)){
+					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+				}
+				else 
+					if (bool) {
+						obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+					}
+					else
+						if(!FieldVerifier.verifyName(profileName)){
+							obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+						}
+						else				
+			if(Utilities.isNotNull(pseudo)){
+				if (StorageService.checkLogin(pseudo, password)){			
+					//on effecctue l'insertion et un bool2 à côté pour le message d'erreur, qu'on fait après pour conserver la chaîne de if/else
+					boolean bool2 = false; 
+					for(int i1=0; i1<listUIDs.size(); i1++) {
+						if(StorageService.insertTagToProfile(pseudo, profileName, listUIDs.get(i))){
+							bool2 = true;
+						}
+					}
+					if(bool2){
+							obj.put("returnCode", ErrorCode.NO_ERROR);	
+							ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
+							JSONArray arrayOfJsonTag = new JSONArray();
+
+							for(Tag tag : ListOfTag){
+								JSONObject tagJson = new JSONObject();
+								try {
+								tagJson.put("tag_id", tag.getUid());
+								tagJson.put("object_name", tag.getObjectName());
+								tagJson.put("picture", tag.getObjectImageName());
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+								}	
+								arrayOfJsonTag.put(tagJson);	
+								obj.put("listTags", arrayOfJsonTag);
+							}	
+					}else{ // problem at the DB level
+							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+					}
+				}else{ // wrong pseudo/password combination
+						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+				}
+			}
+			else { // information incomplete
+					obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+			}
+			
+		return obj.toString();		
+		}
+	
 	
 	// HTTP Get Method
 	@GET 					
