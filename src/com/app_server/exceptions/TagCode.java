@@ -13,4 +13,8 @@ public class TagCode {
 	public final static int MISSING_TAG_ID = 8;
 	public final static int MISSING_TAG_NAME = 9;
 	public final static int MISSING_TAG_PHOTO = 10;
+	public final static int CREATE_PROFILE = 11;
+	public final static int ADD_TAG_TO_PROFILE = 12;
+	public final static int RETRIEVE_PROFILE = 13;
+
 }

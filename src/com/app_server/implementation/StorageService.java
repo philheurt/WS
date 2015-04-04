@@ -1,5 +1,7 @@
 package com.app_server.implementation;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -140,7 +142,7 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email) values(?,?,?,?,?);");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email,tag_change_time,profile_change_time) values(?,?,?,?,?,NOW(),NOW());");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			preparedStatement.setString( 3, first_name );
@@ -186,16 +188,17 @@ public class StorageService {
 	 * 
 	 */
 	
-	public static boolean insertTag(String id, String pseudo, String object_name, String picture) throws SQLException, Exception {
+	public static boolean insertTag(String id, String pseudo, String object_name, String picture_name, InputStream picture) throws SQLException, Exception {
 		boolean insertStatus = false;
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(tag_id,pseudo_owner, object_name, picture) values(?,?,?,?);");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(tag_id,pseudo_owner, object_name, picture_name, picture) values(?,?,?,?,?);");
 			preparedStatement.setString(1, id);
 			preparedStatement.setString( 2, pseudo );
 			preparedStatement.setString( 3, object_name);
-			preparedStatement.setString( 4, picture);					
+			preparedStatement.setString( 4, picture_name);
+			preparedStatement.setBinaryStream( 5, picture);					
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
 			if (records > 0) {
@@ -219,6 +222,40 @@ public class StorageService {
 			}
 		}
 		return insertStatus;
+	}
+	
+	public static InputStream downloadImageTag(String pseudo, String id) throws SQLException, Exception {
+		Connection dbConn = null;
+		InputStream in = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("Select picture FROM Tag WHERE pseudo_owner = ? && tag_id = ?;");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, id);					
+			//System.out.println(query);
+			ResultSet rs = preparedStatement.executeQuery();
+				if(rs.next()){
+					in = rs.getBinaryStream("picture");			
+				}
+				
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return in;
 	}
 	
 	public static boolean deleteTag(String pseudo, String id) throws SQLException, Exception {
@@ -266,7 +303,7 @@ public class StorageService {
      */
 	
 	private static Tag mapTag( ResultSet resultSet ) throws SQLException {
-	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ),resultSet.getString( "picture" ));	  
+	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ),resultSet.getString( "picture_name" ));	  
 	    return tag;
 	}
 	
@@ -276,7 +313,7 @@ public class StorageService {
 		try {
 			dbConn = StorageService.createConnection();
 			if(StorageService.checkLogin(pseudo, password)){
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture FROM Tag where pseudo_owner = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_name FROM Tag where pseudo_owner = ?;");
 			preparedStatement.setString( 1, pseudo );						
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
@@ -403,4 +440,159 @@ public class StorageService {
 		}
 		return modifyTagName;
 	}
+	
+	public static boolean insertProfile(String pseudo, String profileName) throws SQLException, Exception {
+		boolean insertStatus = false;
+		Connection dbConn = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Profile(pseudo, profile_name ) values(?,?);");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, profileName);						
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				insertStatus = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return insertStatus;
+	}
+	
+	public static int retrieveProfileIdFromName (String pseudo, String profileName ) throws Exception {
+		Connection dbConn = null;
+		int profileId = 0;
+		try {
+			dbConn = StorageService.createConnection();		
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT profile_id FROM Profile WHERE pseudo = ? AND profile_name = ?;");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, profileName);
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()){
+				profileId= rs.getInt("profile_id");				
+			}
+		} catch (SQLException sqle) {
+			dbConn.close();
+			throw sqle;
+		} catch (Exception e) {
+					
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return profileId;
+	}
+	
+	public static String retrievePictureNameFromTagId (String pseudo, String id ) throws Exception {
+		Connection dbConn = null;
+		String picture_name="";
+		try {
+			dbConn = StorageService.createConnection();		
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT picture_name FROM Tag WHERE pseudo_owner = ? AND tag_id = ?;");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, id);
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()){
+			picture_name= rs.getString("picture_name");		
+			}
+		} catch (SQLException sqle) {
+			dbConn.close();
+			throw sqle;
+		} catch (Exception e) {
+					
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return picture_name;
+	}
+	
+	public static boolean insertTagToProfile(String pseudo, String profileName, String tagId) throws SQLException, Exception {
+		boolean insertStatus = false;
+		Connection dbConn = null;
+		int profileId = retrieveProfileIdFromName(pseudo,profileName);
+		try {
+			dbConn = StorageService.createConnection();								
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Relation_profile_tag(profile_id, tag_id ) values(?,?);");
+			preparedStatement.setInt( 1, profileId );
+			preparedStatement.setString( 2, tagId);						
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				insertStatus = true;
+			}
+		} catch (SQLException sqle) {
+			dbConn.close();
+			throw sqle;
+		} catch (Exception e) {
+					
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return insertStatus;
+	}
+	
+	public static ArrayList<Tag> retrieveTagsFromProfile(String pseudo, String password, String profileName) throws Exception{
+		Connection dbConn = null;
+		ArrayList<Tag >result = new ArrayList<Tag>();
+		try {			
+			dbConn = StorageService.createConnection();			
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_name FROM Relation_profile_tag where profile_id = ?;");
+			preparedStatement.setInt( 1, retrieveProfileIdFromName(pseudo,profileName) );						
+			ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				result.add(mapTag(rs));
+			}
+			
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return result;
+	}
+	
 }
