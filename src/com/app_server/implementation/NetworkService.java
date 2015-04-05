@@ -287,7 +287,7 @@ public class NetworkService {
 							
 				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
-						if(StorageService.deleteTag(pseudo, id)){						
+						if(StorageService.deleteTag(id)){						
 								obj.put("returnCode", ErrorCode.NO_ERROR);	
 						}else{ // issue at DB level
 								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
@@ -301,7 +301,138 @@ public class NetworkService {
 				}
 			return obj.toString();		
 			}
+						
+	// HTTP Get Method
+						@GET 
+						// Path: http://92.222.33.38:8080/app_server/ns/removetagfromprofile
+						@Path("/removetagfromprofile")
+						// Produces JSON as response
+						@Produces(MediaType.APPLICATION_JSON) 
+						// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removetagfromprofile?pseudo=abc&password=abc&id=xyz&profile_name=abc
+		public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+							JSONObject obj = new JSONObject();
+							obj.put("removetagfromprofile", TagCode.DELETE_TAG_FROM_PROFILE);
+							if(!FieldVerifier.verifyName(pseudo)){
+								obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+							}
+							else 
+								if(!FieldVerifier.verifyName(password)){
+									obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+								}
+								else 
+									if(!FieldVerifier.verifyTagUID(id)){
+										obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+									}
+									else 
+										if(!FieldVerifier.verifyName(profileName)){
+											obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+										}
 										
+							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+								if (StorageService.checkLogin(pseudo, password)){
+									//traitement d'erreur ?
+									int profileID = StorageService.getProfileID(pseudo, profileName);
+									if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){						
+											obj.put("returnCode", ErrorCode.NO_ERROR);	
+									}else{ // issue at DB level
+											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+									}
+								}else{ // wrong pseudo/password combination
+										obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+								}
+							}
+							else { // information incomplete
+									obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+							}
+						return obj.toString();		
+						}
+												
+	// HTTP Get Method
+			@GET 
+			// Path: http://92.222.33.38:8080/app_server/ns/removeprofile
+			@Path("/removeprofile")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removeprofile?pseudo=abc&password=abc&profile_name=abc
+		public String removeProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+				JSONObject obj = new JSONObject();
+				obj.put("removeprofile", TagCode.DELETE_PROFILE);
+				if(!FieldVerifier.verifyName(pseudo)){
+					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+				}
+				else 
+					if(!FieldVerifier.verifyName(password)){
+						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+					}
+					else 
+							if(!FieldVerifier.verifyName(profileName)){
+								obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+							}
+							
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+					if (StorageService.checkLogin(pseudo, password)){
+						//traitement d'erreur ?
+						int profileID = StorageService.getProfileID(pseudo, profileName);
+						if(StorageService.deleteProfile(profileID)){						
+								obj.put("returnCode", ErrorCode.NO_ERROR);	
+						}else{ // issue at DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+						}
+					}else{ // wrong pseudo/password combination
+							obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+					}
+				}
+				else { // information incomplete
+						obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+				}
+			return obj.toString();		
+			}
+	
+	// HTTP Get Method
+			@GET 
+			// Path: http://92.222.33.38:8080/app_server/ns/modifyprofilename
+			@Path("/modifyprofilename")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyprofilename?pseudo=abc&password=abc&id=xyz&profile_name=abc&new_profile_name=abc
+		public String modifyProfileName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName, @QueryParam("new_profile_name") String newProfileName) throws Exception, JSONException{
+				JSONObject obj = new JSONObject();
+				obj.put("modifyprofilename", TagCode.MODIFY_PROFILE_NAME);
+				if(!FieldVerifier.verifyName(pseudo)){
+					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+				}
+				else 
+					if(!FieldVerifier.verifyName(password)){
+						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+					}
+					else 
+						if(!FieldVerifier.verifyName(profileName)){
+							obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+						}
+						else 
+							if(!FieldVerifier.verifyName(newProfileName)){
+								obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+							}
+							
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+					if (StorageService.checkLogin(pseudo, password)){
+						//traitement d'erreur ?
+						int profileID = StorageService.getProfileID(pseudo, profileName);
+						if(StorageService.updateProfileName(profileID, newProfileName)){						
+								obj.put("returnCode", ErrorCode.NO_ERROR);	
+						}else{ // issue at DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+						}
+					}else{ // wrong pseudo/password combination
+							obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+					}
+				}
+				else { // information incomplete
+						obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+				}
+			return obj.toString();		
+			}
+
 	// HTTP Get Method
 		@GET 
 		// Path: http://92.222.33.38:8080/app_server/ns/retrievetag

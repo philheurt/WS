@@ -16,5 +16,8 @@ public class TagCode {
 	public final static int CREATE_PROFILE = 11;
 	public final static int ADD_TAG_TO_PROFILE = 12;
 	public final static int RETRIEVE_PROFILE = 13;
-
+	public final static int DELETE_TAG_FROM_PROFILE = 14;
+	public final static int DELETE_TAGS_FROM_PROFILE = 15;
+	public final static int MODIFY_PROFILE_NAME = 16;
+	public final static int DELETE_PROFILE = 17;
 }
