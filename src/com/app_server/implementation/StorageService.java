@@ -685,7 +685,6 @@ public class StorageService {
 		return modifyPassword;
 	}
 	
-	
 	public static boolean modifyEMailAdress(String pseudo, String newEMailAdress) throws SQLException, Exception {
 		boolean modifyEMailAdress = false;
 		Connection dbConn = null;

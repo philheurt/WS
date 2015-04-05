@@ -225,7 +225,7 @@ public class NetworkService {
 				@GET 
 				// Path: http://92.222.33.38:8080/app_server/ns/deletetag
 				@Path("/downloadimagetag")
-				@Produces(MediaType.APPLICATION_OCTET_STREAM) 
+				@Produces("image/png")
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
 		public Response downloadImageTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id) throws Exception, JSONException{				
 					ResponseBuilder response = null;
