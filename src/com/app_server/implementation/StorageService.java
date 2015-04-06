@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import com.app_server.constants.Constants;
 import com.app_server.data.Account;
+import com.app_server.data.Profile;
 import com.app_server.data.Tag;
 import com.app_server.utilities.Utilities;
 
@@ -651,6 +652,44 @@ public class StorageService {
 		}
 		return result;
 	}
+	
+	
+	
+	public static ArrayList<String> retrieveProfileNames(String pseudo, String password) throws Exception{
+		Connection dbConn = null;
+		ArrayList<String>result = new ArrayList<String>();
+		try {
+			dbConn = StorageService.createConnection();
+			if(StorageService.checkLogin(pseudo, password)){
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT profile_name FROM Profile where pseudo = ?;");
+			preparedStatement.setString( 1, pseudo );						
+			ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				result.add(rs.getString("profile_name"));
+			}
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return result;
+	}
+	
+	
+	
 			
 	public static boolean modifyPassword(String pseudo, String newPassword) throws SQLException, Exception {
 		boolean modifyPassword = false;
