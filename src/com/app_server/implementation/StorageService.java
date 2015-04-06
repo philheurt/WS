@@ -172,8 +172,7 @@ public class StorageService {
 		}
 		return insertStatus;
 	}
-	
-	
+		
 	/**
 	 * Method to insert  a tag in the database
 	 * 
@@ -258,12 +257,10 @@ public class StorageService {
 		return in;
 	}
 	
-	
-	
 	public static boolean deleteProfile(int profileID) throws SQLException, Exception {
 		
 		//plusieurs suppressions (on supprime d'abord des tables "relations_..")
-		//si la première connexion_suppression marche, on effectue la deuxième, etc.
+		//si la premiÃ¨re connexion_suppression marche, on effectue la deuxiÃ¨me, etc.
 		boolean deleteStatus = false;
 		boolean deleteStatus1 = false;
 
@@ -296,7 +293,7 @@ public class StorageService {
 				dbConn.close();
 			}
 		}
-		//on effectue la deuxième seulement si la première a échoué
+		//on effectue la deuxiÃ¨me seulement si la premiÃ¨re a rÃ©ussi
 		if (deleteStatus) {
 			Connection dbConn1 = null;
 			try {
@@ -328,16 +325,14 @@ public class StorageService {
 				}
 			}
 		}
-		//vaut true si les deux ont marché ... du coup si ça foire on ne sait pas dans laquelle des deux.. mais flemme de modifier
+		//vaut true si les deux ont marchï¿½ ... du coup si ï¿½a foire on ne sait pas dans laquelle des deux.. mais flemme de modifier
 		return deleteStatus&&deleteStatus1;
 	}
 	
-	
-	
-public static boolean deleteTag(String tagID) throws SQLException, Exception {
+	public static boolean deleteTag(String tagID) throws SQLException, Exception {
 		
 		//plusieurs suppressions (on supprime d'abord des tables "relations_..")
-		//si la première connexion_suppression marche, on effectue la deuxième, etc.
+		//si la premiÃ¨re connexion_suppression marche, on effectue la deuxiÃ¨me, etc.
 		boolean deleteStatus = false;
 		boolean deleteStatus1 = false;
 		boolean deleteStatus2 = false;
@@ -372,7 +367,7 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 				dbConn.close();
 			}
 		}
-		//on effectue la deuxième seulement si la première a échoué
+		//on effectue la deuxiÃ¨me seulement si la premiÃ¨re a Ã©chouÃ©
 		if (deleteStatus) {
 			Connection dbConn1 = null;
 			try {
@@ -472,12 +467,10 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 				}
 			}
 		}
-		//vaut true si les 4 ont marché ... du coup si ça foire on ne sait pas dans laquelle des 4.. mais flemme de modifier
+		//vaut true si les 4 ont marchï¿½ ... du coup si ï¿½a foire on ne sait pas dans laquelle des 4.. mais flemme de modifier
 		return deleteStatus&&deleteStatus1&&deleteStatus2&&deleteStatus3;
 	}
-	
-	
-	
+		
 	public static boolean updateProfileName(int profileID, String newProfileName)  throws SQLException, Exception {
 		
 		boolean updateStatus = false;
@@ -513,9 +506,7 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 		}
 		return updateStatus;
 	}
-	
-	
-	
+		
 	public static int getProfileID(String pseudo, String profileName) throws SQLException, Exception {
 		
 		Connection dbConn = null;
@@ -543,9 +534,7 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 		}
 		return profileID;
 	}
-	
-	
-	
+		
 	public static boolean deleteTagFromProfile(String pseudo, int profileID, String id) throws SQLException, Exception {
 		
 		boolean deleteStatus = false;
@@ -581,7 +570,40 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 		return deleteStatus;
 	}
 	
-	
+	public static boolean deleteTag(String pseudo, String id) throws SQLException, Exception {
+		boolean deleteStatus = false;
+		Connection dbConn = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner = ? && tag_id = ?;");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, id);					
+			//System.out.println(query);
+			int records = preparedStatement.executeUpdate();
+			//System.out.println(records);
+			//When record is successfully inserted
+			if (records > 0) {
+				deleteStatus = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return deleteStatus;
+	}
 	
 	/**
      * Method to map the result of the login query into an account object
@@ -662,7 +684,6 @@ public static boolean deleteTag(String tagID) throws SQLException, Exception {
 		}
 		return modifyPassword;
 	}
-	
 	
 	public static boolean modifyEMailAdress(String pseudo, String newEMailAdress) throws SQLException, Exception {
 		boolean modifyEMailAdress = false;

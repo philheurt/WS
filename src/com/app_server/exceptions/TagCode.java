@@ -20,7 +20,4 @@ public class TagCode {
 	public final static int DELETE_TAGS_FROM_PROFILE = 15;
 	public final static int MODIFY_PROFILE_NAME = 16;
 	public final static int DELETE_PROFILE = 17;
-
-
-
 }

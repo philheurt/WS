@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
-
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -173,8 +172,6 @@ public class NetworkService {
 	return obj.toString();		
 	}
 	
-	
-	
 	// HTTP POST Method
 	@POST 					
 	@Path("/addtagwithphoto")
@@ -182,7 +179,7 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("tagUID") String tagUID, @FormDataParam("object_name") String object_name, @FormDataParam("picture_name") String picture_name) throws Exception, JSONException{
+		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id, @FormDataParam("object_name") String object_name, @FormDataParam("picture_name") String picture_name) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if(!FieldVerifier.verifyName(pseudo)){
@@ -193,7 +190,7 @@ public class NetworkService {
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
-				if(!FieldVerifier.verifyTagUID(tagUID)){
+				if(!FieldVerifier.verifyTagUID(id)){
 					obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
 				}
 				else 
@@ -208,7 +205,7 @@ public class NetworkService {
 						
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
-				if(StorageService.insertTag(tagUID, pseudo, object_name, picture_name, picture)){
+				if(StorageService.insertTag(id, pseudo, object_name, picture_name, picture)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
 						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
@@ -228,7 +225,7 @@ public class NetworkService {
 				@GET 
 				// Path: http://92.222.33.38:8080/app_server/ns/deletetag
 				@Path("/downloadimagetag")
-				@Produces(MediaType.APPLICATION_OCTET_STREAM) 
+				@Produces("image/png")
 				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
 		public Response downloadImageTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id) throws Exception, JSONException{				
 					ResponseBuilder response = null;
@@ -304,17 +301,15 @@ public class NetworkService {
 				}
 			return obj.toString();		
 			}
-			
-			
-			
-			// HTTP Get Method
+						
+	// HTTP Get Method
 						@GET 
 						// Path: http://92.222.33.38:8080/app_server/ns/removetagfromprofile
 						@Path("/removetagfromprofile")
 						// Produces JSON as response
 						@Produces(MediaType.APPLICATION_JSON) 
 						// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removetagfromprofile?pseudo=abc&password=abc&id=xyz&profile_name=abc
-					public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+		public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
 							JSONObject obj = new JSONObject();
 							obj.put("removetagfromprofile", TagCode.DELETE_TAG_FROM_PROFILE);
 							if(!FieldVerifier.verifyName(pseudo)){
@@ -351,104 +346,93 @@ public class NetworkService {
 							}
 						return obj.toString();		
 						}
-						
-						
-						
-						
-						
-						// HTTP Get Method
-						@GET 
-						// Path: http://92.222.33.38:8080/app_server/ns/removeprofile
-						@Path("/removeprofile")
-						// Produces JSON as response
-						@Produces(MediaType.APPLICATION_JSON) 
-						// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removeprofile?pseudo=abc&password=abc&profile_name=abc
-					public String removeProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
-							JSONObject obj = new JSONObject();
-							obj.put("removeprofile", TagCode.DELETE_PROFILE);
-							if(!FieldVerifier.verifyName(pseudo)){
-								obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+												
+	// HTTP Get Method
+			@GET 
+			// Path: http://92.222.33.38:8080/app_server/ns/removeprofile
+			@Path("/removeprofile")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removeprofile?pseudo=abc&password=abc&profile_name=abc
+		public String removeProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+				JSONObject obj = new JSONObject();
+				obj.put("removeprofile", TagCode.DELETE_PROFILE);
+				if(!FieldVerifier.verifyName(pseudo)){
+					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+				}
+				else 
+					if(!FieldVerifier.verifyName(password)){
+						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+					}
+					else 
+							if(!FieldVerifier.verifyName(profileName)){
+								obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 							}
-							else 
-								if(!FieldVerifier.verifyName(password)){
-									obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-								}
-								else 
-										if(!FieldVerifier.verifyName(profileName)){
-											obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
-										}
-										
-							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
-								if (StorageService.checkLogin(pseudo, password)){
-									//traitement d'erreur ?
-									int profileID = StorageService.getProfileID(pseudo, profileName);
-									if(StorageService.deleteProfile(profileID)){						
-											obj.put("returnCode", ErrorCode.NO_ERROR);	
-									}else{ // issue at DB level
-											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-									}
-								}else{ // wrong pseudo/password combination
-										obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-								}
-							}
-							else { // information incomplete
-									obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
-							}
-						return obj.toString();		
+							
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+					if (StorageService.checkLogin(pseudo, password)){
+						//traitement d'erreur ?
+						int profileID = StorageService.getProfileID(pseudo, profileName);
+						if(StorageService.deleteProfile(profileID)){						
+								obj.put("returnCode", ErrorCode.NO_ERROR);	
+						}else{ // issue at DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 						}
-						
-						
-						
-						
-						
-						
-						// HTTP Get Method
-						@GET 
-						// Path: http://92.222.33.38:8080/app_server/ns/modifyprofilename
-						@Path("/modifyprofilename")
-						// Produces JSON as response
-						@Produces(MediaType.APPLICATION_JSON) 
-						// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyprofilename?pseudo=abc&password=abc&id=xyz&profile_name=abc&new_profile_name=abc
-					public String modifyProfileName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName, @QueryParam("new_profile_name") String newProfileName) throws Exception, JSONException{
-							JSONObject obj = new JSONObject();
-							obj.put("modifyprofilename", TagCode.MODIFY_PROFILE_NAME);
-							if(!FieldVerifier.verifyName(pseudo)){
-								obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-							}
-							else 
-								if(!FieldVerifier.verifyName(password)){
-									obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-								}
-								else 
-									if(!FieldVerifier.verifyName(profileName)){
-										obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
-									}
-									else 
-										if(!FieldVerifier.verifyName(newProfileName)){
-											obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
-										}
-										
-							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
-								if (StorageService.checkLogin(pseudo, password)){
-									//traitement d'erreur ?
-									int profileID = StorageService.getProfileID(pseudo, profileName);
-									if(StorageService.updateProfileName(profileID, newProfileName)){						
-											obj.put("returnCode", ErrorCode.NO_ERROR);	
-									}else{ // issue at DB level
-											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-									}
-								}else{ // wrong pseudo/password combination
-										obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-								}
-							}
-							else { // information incomplete
-									obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
-							}
-						return obj.toString();		
+					}else{ // wrong pseudo/password combination
+							obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+					}
+				}
+				else { // information incomplete
+						obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+				}
+			return obj.toString();		
+			}
+	
+	// HTTP Get Method
+			@GET 
+			// Path: http://92.222.33.38:8080/app_server/ns/modifyprofilename
+			@Path("/modifyprofilename")
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON) 
+			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyprofilename?pseudo=abc&password=abc&id=xyz&profile_name=abc&new_profile_name=abc
+		public String modifyProfileName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName, @QueryParam("new_profile_name") String newProfileName) throws Exception, JSONException{
+				JSONObject obj = new JSONObject();
+				obj.put("modifyprofilename", TagCode.MODIFY_PROFILE_NAME);
+				if(!FieldVerifier.verifyName(pseudo)){
+					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+				}
+				else 
+					if(!FieldVerifier.verifyName(password)){
+						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+					}
+					else 
+						if(!FieldVerifier.verifyName(profileName)){
+							obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
 						}
-			
-			
-										
+						else 
+							if(!FieldVerifier.verifyName(newProfileName)){
+								obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+							}
+							
+				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+					if (StorageService.checkLogin(pseudo, password)){
+						//traitement d'erreur ?
+						int profileID = StorageService.getProfileID(pseudo, profileName);
+						if(StorageService.updateProfileName(profileID, newProfileName)){						
+								obj.put("returnCode", ErrorCode.NO_ERROR);	
+						}else{ // issue at DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+						}
+					}else{ // wrong pseudo/password combination
+							obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+					}
+				}
+				else { // information incomplete
+						obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+				}
+			return obj.toString();		
+			}
+
 	// HTTP Get Method
 		@GET 
 		// Path: http://92.222.33.38:8080/app_server/ns/retrievetag
@@ -654,7 +638,7 @@ public class NetworkService {
 	@Path("/addtagtoprofile")
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
-	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&profile_name=xyz&id=abc
+	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
 		public String addTagToProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("profile_name") String profileName, @QueryParam("id") String id) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG_TO_PROFILE);
@@ -707,185 +691,6 @@ public class NetworkService {
 		
 	return obj.toString();		
 	}
-	
-	// HTTP POST Method
-		@POST 					
-		@Path("/addtagstoprofile")
-		@Consumes(MediaType.MULTIPART_FORM_DATA)
-		// Produces JSON as response
-		@Produces(MediaType.APPLICATION_JSON) 
-		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtagstoprofile
-			public String addTagsToProfile( @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("profileName") String profileName, @FormDataParam("jsonUIDs") String jsonUIDs) throws Exception, JSONException{
-			JSONObject obj = new JSONObject();
-			obj.put("tag", TagCode.ADD_TAG);
-			
-			ArrayList<String> listUIDs = new ArrayList<String>();
-			
-			//on interprète le json pour remplir listUIDs
-			JSONObject jsonTemp = new JSONObject(jsonUIDs);
-			int i = 0;
-			//on utilise que JSON.get(missing key) = NULL
-			while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
-				listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
-				i++;
-			}
-			
-			boolean bool = false; 
-			for(int i1=0; i1<listUIDs.size(); i1++) {
-				if(!FieldVerifier.verifyTagUID(listUIDs.get(i1))){
-					bool = true;
-				}
-			}
-			
-			if(!FieldVerifier.verifyName(pseudo)){
-				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-			}
-			else 
-				if(!FieldVerifier.verifyName(password)){
-					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-				}
-				else 
-					if (bool) {
-						obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
-					}
-					else
-						if(!FieldVerifier.verifyName(profileName)){
-							obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
-						}
-						else				
-			if(Utilities.isNotNull(pseudo)){
-				if (StorageService.checkLogin(pseudo, password)){			
-					//on effecctue l'insertion et un bool2 à côté pour le message d'erreur, qu'on fait après pour conserver la chaîne de if/else
-					boolean bool2 = false; 
-					for(int i1=0; i1<listUIDs.size(); i1++) {
-						if(StorageService.insertTagToProfile(pseudo, profileName, listUIDs.get(i))){
-							bool2 = true;
-						}
-					}
-					if(bool2){
-							obj.put("returnCode", ErrorCode.NO_ERROR);	
-							ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
-							JSONArray arrayOfJsonTag = new JSONArray();
-
-							for(Tag tag : ListOfTag){
-								JSONObject tagJson = new JSONObject();
-								try {
-								tagJson.put("tag_id", tag.getUid());
-								tagJson.put("object_name", tag.getObjectName());
-								tagJson.put("picture", tag.getObjectImageName());
-								} catch (JSONException e) {
-									// TODO Auto-generated catch block
-								}	
-								arrayOfJsonTag.put(tagJson);	
-								obj.put("listTags", arrayOfJsonTag);
-							}	
-					}else{ // problem at the DB level
-							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
-					}
-				}else{ // wrong pseudo/password combination
-						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-				}
-			}
-			else { // information incomplete
-					obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
-			}
-			
-		return obj.toString();		
-		}
-		
-		
-		
-		
-		// HTTP POST Method
-				@POST 					
-				@Path("/removetagsfromprofile")
-				@Consumes(MediaType.MULTIPART_FORM_DATA)
-				// Produces JSON as response
-				@Produces(MediaType.APPLICATION_JSON) 
-				// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtagstoprofile
-					public String removeTagsFromProfile( @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("profileName") String profileName, @FormDataParam("jsonUIDs") String jsonUIDs) throws Exception, JSONException{
-					JSONObject obj = new JSONObject();
-					obj.put("tag", TagCode.DELETE_TAGS_FROM_PROFILE);
-					
-					ArrayList<String> listUIDs = new ArrayList<String>();
-					
-					//on interprète le json pour remplir listUIDs
-					JSONObject jsonTemp = new JSONObject(jsonUIDs);
-					int i = 0;
-					//on utilise que JSON.get(missing key) = NULL
-					while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
-						listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
-						i++;
-					}
-					
-					//contrôle d'erreur : avec bool est false si au moins un est false
-					boolean bool = false; 
-					for(int i1=0; i1<listUIDs.size(); i1++) {
-						if(!FieldVerifier.verifyTagUID(listUIDs.get(i1))){
-							bool = true;
-						}
-					}
-					
-					if(!FieldVerifier.verifyName(pseudo)){
-						obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-					}
-					else 
-						if(!FieldVerifier.verifyName(password)){
-							obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-						}
-						else 
-							if (bool) {
-								obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
-							}
-							else
-								if(!FieldVerifier.verifyName(profileName)){
-									obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
-								}
-								else				
-					if(Utilities.isNotNull(pseudo)){
-						if (StorageService.checkLogin(pseudo, password)){			
-							//on effecctue l'insertion et un bool2 à côté pour le message d'erreur, qu'on fait après pour conserver la chaîne de if/else
-							boolean bool2 = false; 
-							for(int i1=0; i1<listUIDs.size(); i1++) {
-								if(StorageService.deleteTagFromProfile(pseudo, StorageService.getProfileID(pseudo, profileName), listUIDs.get(i))){
-									bool2 = true;
-								}
-							}
-							if(bool2){
-									obj.put("returnCode", ErrorCode.NO_ERROR);	
-									ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
-									JSONArray arrayOfJsonTag = new JSONArray();
-
-									for(Tag tag : ListOfTag){
-										JSONObject tagJson = new JSONObject();
-										try {
-										tagJson.put("tag_id", tag.getUid());
-										tagJson.put("object_name", tag.getObjectName());
-										tagJson.put("picture", tag.getObjectImageName());
-										} catch (JSONException e) {
-											// TODO Auto-generated catch block
-										}	
-										arrayOfJsonTag.put(tagJson);	
-										obj.put("listTags", arrayOfJsonTag);
-									}	
-							}else{ // problem at the DB level
-									obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
-							}
-						}else{ // wrong pseudo/password combination
-								obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-						}
-					}
-					else { // information incomplete
-							obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
-					}
-					
-				return obj.toString();		
-				}
-		
-		
-		
-		
-	
 	
 	// HTTP Get Method
 	@GET 					
