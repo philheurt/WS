@@ -182,7 +182,7 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id, @FormDataParam("object_name") String object_name, @FormDataParam("picture_name") String picture_name) throws Exception, JSONException{
+		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("tagUID") String tagUID, @FormDataParam("object_name") String object_name, @FormDataParam("picture_name") String picture_name) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if(!FieldVerifier.verifyName(pseudo)){
@@ -193,7 +193,7 @@ public class NetworkService {
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
-				if(!FieldVerifier.verifyTagUID(id)){
+				if(!FieldVerifier.verifyTagUID(tagUID)){
 					obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
 				}
 				else 
@@ -208,7 +208,7 @@ public class NetworkService {
 						
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
-				if(StorageService.insertTag(id, pseudo, object_name, picture_name, picture)){
+				if(StorageService.insertTag(tagUID, pseudo, object_name, picture_name, picture)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
 						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
