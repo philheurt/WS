@@ -743,5 +743,53 @@ public class NetworkService {
 		
 	return obj.toString();		
 	}
-	
+	// HTTP Get Method
+		@GET
+		@Path("/retrieveprofiles")
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON)
+		// Query parameters are parameters:
+		// http://92.222.33.38:8080/app_server/ns/retrieveprofiles?pseudo=abc&password=abc
+		public String retrieveProfiles(@QueryParam("pseudo") String pseudo,@QueryParam("password") String password) throws Exception,JSONException {
+		JSONObject obj = new JSONObject();
+		obj.put("tag", TagCode.RETRIEVE_PROFILES);
+		if (!FieldVerifier.verifyName(pseudo)) {
+			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+		} else if (!FieldVerifier.verifyName(password)) {
+			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+		} else
+			
+			if (Utilities.isNotNull(pseudo)) {
+				if (StorageService.checkLogin(pseudo, password)) {
+					obj.put("returnCode", ErrorCode.NO_ERROR);
+					ArrayList<String> profileNames = StorageService.retrieveProfileNames(pseudo, password);					
+					JSONObject obj1 = new JSONObject();
+					JSONArray arrayOfJsonTag = new JSONArray();
+
+					for (String profileName : profileNames) {						
+						ArrayList<Tag> tagList = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);			
+						for (Tag tag : tagList) {							
+							JSONObject tagJson = new JSONObject();
+							try {
+								tagJson.put("tag_id", tag.getUid());
+								tagJson.put("object_name", tag.getObjectName());
+								tagJson.put("picture", tag.getObjectImageName());
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+							}
+							arrayOfJsonTag.put(tagJson);
+						}
+						obj1.put(profileName, arrayOfJsonTag);
+					}
+					obj.put("listProfiles", obj1);
+
+				} else { // wrong pseudo/password combination
+					obj.put("returnCode",
+							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+				}
+			} else { // information incomplete
+				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+			}
+		return obj.toString();
+	}
 }
