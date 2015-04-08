@@ -824,7 +824,7 @@ public class StorageService {
 		return insertStatus;
 	}
 	
-	public static int retrieveProfileIdFromName (String pseudo, String profileName ) throws Exception {
+	public static int retrieveProfileIDFromProfileName (String pseudo, String profileName ) throws Exception {
 		Connection dbConn = null;
 		int profileId = 0;
 		try {
@@ -853,17 +853,16 @@ public class StorageService {
 		return profileId;
 	}
 	
-	public static String retrievePictureNameFromTagId (String pseudo, String id ) throws Exception {
+	public static Tag retrieveTagFromTagID (String id ) throws Exception {
 		Connection dbConn = null;
-		String picture_name="";
+		Tag resultTag = new Tag("a","b");
 		try {
 			dbConn = StorageService.createConnection();		
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT picture_name FROM Tag WHERE pseudo_owner = ? AND tag_id = ?;");
-			preparedStatement.setString( 1, pseudo );
-			preparedStatement.setString( 2, id);
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id, object_name, picture FROM Tag WHERE tag_id = ?;");
+			preparedStatement.setString( 1, id );
 			ResultSet rs = preparedStatement.executeQuery();
 			if(rs.next()){
-			picture_name= rs.getString("picture_name");		
+				resultTag = mapTag(rs);
 			}
 		} catch (SQLException sqle) {
 			dbConn.close();
@@ -879,13 +878,13 @@ public class StorageService {
 				dbConn.close();
 			}
 		}
-		return picture_name;
+		return resultTag;
 	}
 	
 	public static boolean insertTagToProfile(String pseudo, String profileName, String tagId) throws SQLException, Exception {
 		boolean insertStatus = false;
 		Connection dbConn = null;
-		int profileId = retrieveProfileIdFromName(pseudo,profileName);
+		int profileId = retrieveProfileIDFromProfileName(pseudo,profileName);
 		try {
 			dbConn = StorageService.createConnection();								
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Relation_profile_tag(profile_id, tag_id ) values(?,?);");
@@ -913,16 +912,16 @@ public class StorageService {
 		return insertStatus;
 	}
 	
-	public static ArrayList<Tag> retrieveTagsFromProfile(String pseudo, String password, String profileName) throws Exception{
+	public static ArrayList<String> retrieveTagIDsFromProfileID(String pseudo, String password, int profileID) throws Exception{
 		Connection dbConn = null;
-		ArrayList<Tag >result = new ArrayList<Tag>();
+		ArrayList<String>result = new ArrayList<String>();
 		try {			
 			dbConn = StorageService.createConnection();			
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_name FROM Relation_profile_tag where profile_id = ?;");
-			preparedStatement.setInt( 1, retrieveProfileIdFromName(pseudo,profileName) );						
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id FROM Relation_profile_tag where profile_id = ?;");
+			preparedStatement.setInt( 1, profileID );						
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
-				result.add(mapTag(rs));
+				result.add(rs.getString("tag_id"));
 			}
 			
 		} catch (SQLException sqle) {

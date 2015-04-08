@@ -13,11 +13,11 @@ public class FieldVerifier {
     }
 
     public static boolean verifyEMailAddress(String email) {
-        return email.indexOf('@') >= 0;
+        return (email.indexOf('@') >= 0)&&(email.length()<30);
     }
 
     public static boolean verifyPassword(String password) {
-        return password.length() >= 6;
+        return (password.length() >= 6)&&(password.length()<65);
     }
 
     public static boolean verifyTagUID(String uid) {

@@ -3,7 +3,6 @@ package com.app_server.implementation;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.GET;
@@ -13,12 +12,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-import org.apache.log4j.Logger;
-import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -238,8 +234,7 @@ public class NetworkService {
 		} else if (!FieldVerifier.verifyTagUID(id)) {
 
 		} else if (StorageService.checkLogin(pseudo, password)) {
-			picture_name = StorageService.retrievePictureNameFromTagId(pseudo,
-					id);
+			picture_name = StorageService.retrieveTagFromTagID(id).getObjectImageName();
 			InputStream in = StorageService.downloadImageTag(pseudo, id);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			int data = in.read();
@@ -748,7 +743,7 @@ public class NetworkService {
 		obj.put("tag", TagCode.RETRIEVE_PROFILE);
 		if (!FieldVerifier.verifyName(pseudo)) {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-		} else if (!FieldVerifier.verifyName(password)) {
+		} else if (!FieldVerifier.verifyPassword(password)) {
 			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 		} else if (!FieldVerifier.verifyName(profileName)) {
 			obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
@@ -758,18 +753,30 @@ public class NetworkService {
 				if (StorageService.checkLogin(pseudo, password)) {
 					obj.put("returnCode", ErrorCode.NO_ERROR);
 					obj.put("profileName", profileName);
-					ArrayList<Tag> ListOfTag = StorageService
-							.retrieveTagsFromProfile(pseudo, password, profileName);
+					
+					/*****************  retrieveTagsFromProfile  **************/
+					//on récupère profileID
+					int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
+					//on récupère les tagIDs liés à profileID
+					ArrayList<String> listOfTagID = StorageService
+							.retrieveTagIDsFromProfileID(pseudo, password, profileID);
+					//on récupère les tags liés aux tagIDs
+					ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+					for(String TagID : listOfTagID) {
+						listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
+					}	
+					/************************************************************/
+					
+					//on remplit le json listTags
 					JSONArray arrayOfJsonTag = new JSONArray();
 
-					for (Tag tag : ListOfTag) {
+					for (Tag tag : listOfTag) {
 						JSONObject tagJson = new JSONObject();
 						try {
 							tagJson.put("tag_id", tag.getUid());
 							tagJson.put("object_name", tag.getObjectName());
 							tagJson.put("picture", tag.getObjectImageName());
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 						}
 						arrayOfJsonTag.put(tagJson);
 						obj.put("listTags", arrayOfJsonTag);
@@ -796,6 +803,8 @@ public class NetworkService {
 	public String retrieveProfiles(@QueryParam("pseudo") String pseudo,
 			@QueryParam("password") String password) throws Exception,
 			JSONException {
+		
+		// on renvoie obj("returnCode"=?; "listProfiles"= obj1("profile1" = JSONArray(JSONtag ; JSONTag2;...) ; ... ) ) 
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.RETRIEVE_PROFILES);
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -814,11 +823,22 @@ public class NetworkService {
 					JSONArray arrayOfJsonTag = new JSONArray();
 
 					for (String profileName : profileNames) {
+												
+						/*****************  retrieveTagsFromProfile  **************/
+						//on récupère profileID
+						int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
+						//on récupère les tagIDs liés à profileID
+						ArrayList<String> listOfTagID = StorageService
+								.retrieveTagIDsFromProfileID(pseudo, password, profileID);
+						//on récupère les tags liés aux tagIDs
+						ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+						for(String TagID : listOfTagID) {
+							listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
+						}	
+						/************************************************************/
 						
-						ArrayList<Tag> tagList = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
-						
-						for (Tag tag : tagList) {
-							
+						//on consruit ArrayOfJsonTag
+						for (Tag tag : listOfTag) {
 							JSONObject tagJson = new JSONObject();
 							try {
 								tagJson.put("tag_id", tag.getUid());
