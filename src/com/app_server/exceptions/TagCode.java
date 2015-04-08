@@ -1,6 +1,8 @@
 package com.app_server.exceptions;
 
 
+
+
 public class TagCode {
 
 	public final static int LOGIN = 0;
@@ -22,4 +24,6 @@ public class TagCode {
 	public final static int MODIFY_PROFILE_NAME = 16;
 	public final static int DELETE_PROFILE = 17;
 	public final static int RETRIEVE_PROFILES = 18;
+	public final static int GET_LAST_TAGS_UPDATE_TIME = 19;
+	public final static int GET_LAST_PROFILES_UPDATE_TIME = 20;
 }

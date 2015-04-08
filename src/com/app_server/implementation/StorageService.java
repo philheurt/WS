@@ -3,6 +3,7 @@ package com.app_server.implementation;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.ResultSet;
@@ -814,5 +815,71 @@ public class StorageService {
 			}
 		}
 		return result;
+	}
+	
+	public static Date retrieveLastTagsUpdateTime(String pseudo, String password) throws Exception{
+		Connection dbConn = null;
+		Date date = null;
+		try {
+			dbConn = StorageService.createConnection();
+			if(StorageService.checkLogin(pseudo, password)){
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tags_change_time FROM User where pseudo = ? ;");
+			preparedStatement.setString( 1, pseudo );			
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()) {
+				date = rs.getDate("tags_change_time");
+			}
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return date;
+	}
+	
+	public static Date retrieveLastProfilesUpdateTime(String pseudo, String password) throws Exception{
+		Connection dbConn = null;
+		Date date = null;
+		try {
+			dbConn = StorageService.createConnection();
+			if(StorageService.checkLogin(pseudo, password)){
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT profiles_change_time FROM User where pseudo = ? ;");
+			preparedStatement.setString( 1, pseudo );			
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()) {
+				date = rs.getDate("profiles_change_time");
+			}
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return date;
 	}
 }
