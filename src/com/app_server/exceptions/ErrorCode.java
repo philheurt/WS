@@ -13,15 +13,16 @@ public class ErrorCode {
 	public final static int MISSING_TAG_NAME = 7;
 	public final static int MISSING_NEW_PASSWORD = 8;
 	public final static int MISSING_NEW_OBJECT_NAME = 9;
-	public final static int MISSING_PROFILE_NAME = 15;
-	public final static int MISSING_TAG_PICTURE_NAME = 16;
+	public final static int MISSING_PROFILE_NAME = 10;
+	public final static int MISSING_TAG_PICTURE_NAME = 11;
 	
-	public final static int INVALID_PSEUDO_PASSWORD_COMBINATION = 10;
-	public final static int USER_ALREADY_REGISTERED = 11;
-	public final static int ILLEGAL_USE_OF_SPECIAL_CHARACTER = 12;
-	public final static int DATABASE_ACCESS_ISSUE = 13;
-	public final static int INFORMATION_INCOMPLETE = 14;
-	public final static int TAG_ALREADY_REGISTERED =15;
+	public final static int INVALID_PSEUDO_PASSWORD_COMBINATION = 12;
+	public final static int USER_ALREADY_REGISTERED = 13;
+	public final static int TAG_ALREADY_REGISTERED =14;
+	public final static int ILLEGAL_USE_OF_SPECIAL_CHARACTER = 15;
+	public final static int DATABASE_ACCESS_ISSUE = 16;
+	public final static int INFORMATION_INCOMPLETE = 17;
+
 	
 	public final static int UNKNOWN_ERROR = 666;
 	
