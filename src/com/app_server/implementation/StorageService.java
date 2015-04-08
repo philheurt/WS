@@ -144,7 +144,7 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email,tag_change_time,profile_change_time) values(?,?,?,?,?,NOW(),NOW());");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email,tags_change_time,profiles_change_time) values(?,?,?,?,?,NOW(),NOW());");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			preparedStatement.setString( 3, first_name );
@@ -189,16 +189,16 @@ public class StorageService {
 	 * 
 	 */
 	
-	public static boolean insertTag(String id, String pseudo, String object_name, String picture_name, InputStream picture) throws SQLException, Exception {
+	public static boolean insertTag(String id, String pseudo, String object_name, InputStream picture) throws SQLException, Exception {
 		boolean insertStatus = false;
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(tag_id,pseudo_owner, object_name, picture_name, picture) values(?,?,?,?,?);");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into Tag(tag_id,pseudo_owner, object_name, picture_version, picture) values(?,?,?,?,?);");
 			preparedStatement.setString(1, id);
 			preparedStatement.setString( 2, pseudo );
 			preparedStatement.setString( 3, object_name);
-			preparedStatement.setString( 4, picture_name);
+			preparedStatement.setInt( 4, 1);
 			preparedStatement.setBinaryStream( 5, picture);					
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
@@ -493,7 +493,7 @@ public class StorageService {
      */
 	
 	private static Tag mapTag( ResultSet resultSet ) throws SQLException {
-	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ),resultSet.getString( "picture_name" ));	  
+	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ));	  
 	    return tag;
 	}
 	
@@ -503,7 +503,7 @@ public class StorageService {
 		try {
 			dbConn = StorageService.createConnection();
 			if(StorageService.checkLogin(pseudo, password)){
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_name FROM Tag where pseudo_owner = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name FROM Tag where pseudo_owner = ?;");
 			preparedStatement.setString( 1, pseudo );						
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
@@ -752,37 +752,6 @@ public class StorageService {
 		return insertStatus;
 	}
 	
-	public static ArrayList<Tag> retrieveTagsFromProfile(String pseudo, String password, String profileName) throws Exception{
-		Connection dbConn = null;
-		ArrayList<Tag >result = new ArrayList<Tag>();
-		try {			
-			dbConn = StorageService.createConnection();			
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_name FROM Relation_profile_tag where profile_id = ?;");
-			preparedStatement.setInt( 1, retrieveProfileIdFromName(pseudo,profileName) );						
-			ResultSet rs = preparedStatement.executeQuery();
-			while (rs.next()) {
-				result.add(mapTag(rs));
-			}
-			
-		} catch (SQLException sqle) {
-			sqle.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw sqle;
-		} catch (Exception e) {
-			e.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
-			}
-		}
-		return result;
-	}
 	
 	public static ArrayList<String> retrieveProfileNames(String pseudo, String password) throws Exception{
 		Connection dbConn = null;
@@ -815,6 +784,95 @@ public class StorageService {
 			}
 		}
 		return result;
+	}
+	
+	public static ArrayList<String> retrieveTagIDsFromProfileID(String pseudo, String password, int profileID) throws Exception{
+		Connection dbConn = null;
+		ArrayList<String>result = new ArrayList<String>();
+		try {			
+			dbConn = StorageService.createConnection();			
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id FROM Relation_profile_tag where profile_id = ?;");
+			preparedStatement.setInt( 1, profileID );						
+			ResultSet rs = preparedStatement.executeQuery();
+			while (rs.next()) {
+				result.add(rs.getString("tag_id"));
+			}
+			
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return result;
+	}
+	
+	public static Tag retrieveTagFromTagID (String id ) throws Exception {
+		Connection dbConn = null;
+		Tag resultTag = new Tag("a","b");
+		try {
+			dbConn = StorageService.createConnection();		
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id, object_name, picture FROM Tag WHERE tag_id = ?;");
+			preparedStatement.setString( 1, id );
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()){
+				resultTag = mapTag(rs);
+			}
+		} catch (SQLException sqle) {
+			dbConn.close();
+			throw sqle;
+		} catch (Exception e) {
+					
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return resultTag;
+	}
+	
+	public static int retrieveProfileIDFromProfileName (String pseudo, String profileName ) throws Exception {
+		Connection dbConn = null;
+		int profileId = 0;
+		try {
+			dbConn = StorageService.createConnection();		
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT profile_id FROM Profile WHERE pseudo = ? AND profile_name = ?;");
+			preparedStatement.setString( 1, pseudo );
+			preparedStatement.setString( 2, profileName);
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()){
+				profileId= rs.getInt("profile_id");				
+			}
+		} catch (SQLException sqle) {
+			dbConn.close();
+			throw sqle;
+		} catch (Exception e) {
+					
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return profileId;
 	}
 	
 	public static Date retrieveLastTagsUpdateTime(String pseudo, String password) throws Exception{

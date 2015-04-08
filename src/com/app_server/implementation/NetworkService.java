@@ -81,7 +81,6 @@ public class NetworkService {
 		@Produces(MediaType.APPLICATION_JSON) 
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/register?pseudo=pqrs&password=abc&first_name=xyz&last_name=cdf&email=hij
 		public String register(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("first_name") String first_name, @QueryParam("last_name") String last_name, @QueryParam("email") String email) throws Exception{					
-			int returnCode = ErrorCode.DATABASE_ACCESS_ISSUE;
 			JSONObject obj = new JSONObject();
 			obj.put("tag", TagCode.REGISTER);
 			if(!FieldVerifier.verifyName(pseudo)){
@@ -107,23 +106,22 @@ public class NetworkService {
 										
 				try {
 					if(StorageService.insertUser(pseudo, password, first_name, last_name, email)){						
-						returnCode = ErrorCode.NO_ERROR;
-						obj.put("returncode", returnCode);	
-					}else{
-						returnCode = ErrorCode.DATABASE_ACCESS_ISSUE;			
-						obj.put("returncode", returnCode);	
+						obj.put("returnCode", ErrorCode.NO_ERROR);	
+					}else{						
+						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
 					}
 				} catch(SQLException sqle){					
 					//When Primary key violation occurs that means user is already registered
 					if(sqle.getErrorCode() == 1062){
-						returnCode = ErrorCode.USER_ALREADY_REGISTERED;
-						obj.put("returncode", returnCode);	
+						obj.put("returnCode", ErrorCode.USER_ALREADY_REGISTERED);	
 					} 
 					//When special characters are used in pseudo, password, first_name, last_name, email)
 					else if(sqle.getErrorCode() == 1064){
-						returnCode = ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER;
-						obj.put("returncode", returnCode);	
+						obj.put("returnCode",ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);	
+					}else{
+						obj.put("returnCode", ErrorCode.UNKNOWN_ERROR);
 					}
+					
 				}
 														
 			return obj.toString();
@@ -136,7 +134,7 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-		public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("id") String id, @QueryParam("object_name") String object_name, @QueryParam("picture") String picture) throws Exception, JSONException{
+		public String addTag(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password,@QueryParam("id") String id, @QueryParam("object_name") String object_name) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if(!FieldVerifier.verifyName(pseudo)){
@@ -159,7 +157,7 @@ public class NetworkService {
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
 				try{
-				if(StorageService.insertTag(id, pseudo, object_name, picture, null)){
+				if(StorageService.insertTag(id, pseudo, object_name, null)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
 						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
@@ -190,7 +188,7 @@ public class NetworkService {
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
-		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id, @FormDataParam("object_name") String object_name, @FormDataParam("picture_name") String picture_name) throws Exception, JSONException{
+		public String addTagWithPhoto( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id, @FormDataParam("object_name") String object_name) throws Exception, JSONException{
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if(!FieldVerifier.verifyName(pseudo)){
@@ -209,15 +207,11 @@ public class NetworkService {
 						obj.put("returnCode", ErrorCode.MISSING_TAG_NAME);
 					}
 					else
-						if(!FieldVerifier.verifyName(picture_name)){
-							obj.put("returnCode", ErrorCode.MISSING_TAG_PICTURE_NAME);
-						}
-						else 
 						
 							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 								if (StorageService.checkLogin(pseudo, password)){			
 									try{
-									if(StorageService.insertTag(id, pseudo, object_name, picture_name, picture)){
+									if(StorageService.insertTag(id, pseudo, object_name, picture)){
 											obj.put("returnCode", ErrorCode.NO_ERROR);		
 									}else{ // problem at the DB level
 											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
@@ -263,7 +257,7 @@ public class NetworkService {
 							}
 							else 
 								if (StorageService.checkLogin(pseudo, password)){
-									picture_name = StorageService.retrievePictureNameFromTagId(pseudo, id);
+									picture_name = StorageService.retrieveTagFromTagID(id).getObjectImageName();
 									InputStream in = StorageService.downloadImageTag(pseudo, id);
 									ByteArrayOutputStream out = new ByteArrayOutputStream();
 							        int data = in.read();
@@ -482,7 +476,6 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					try {
 					tagJson.put("tag_id", tag.getUid());
 					tagJson.put("object_name", tag.getObjectName());
-					tagJson.put("picture_name", tag.getObjectImageName());
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 					}	
@@ -693,23 +686,8 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			if (StorageService.checkLogin(pseudo, password)){
 				try{
 				if(StorageService.insertTagToProfile(pseudo, profileName, id)){
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-						ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
-						JSONArray arrayOfJsonTag = new JSONArray();
-
-						for(Tag tag : ListOfTag){
-							JSONObject tagJson = new JSONObject();
-							try {
-							tagJson.put("tag_id", tag.getUid());
-							tagJson.put("object_name", tag.getObjectName());
-							tagJson.put("picture", tag.getObjectImageName());
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}	
-							arrayOfJsonTag.put(tagJson);	
-							obj.put("listTags", arrayOfJsonTag);
-						}
-				}
+						obj.put("returnCode", ErrorCode.NO_ERROR);					
+						}				
 				}catch(SQLException sqle){					
 					//When Primary key violation occurs that means user is already registered
 					if(sqle.getErrorCode() == 1062){
@@ -756,10 +734,23 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			if (StorageService.checkLogin(pseudo, password)){							
 						obj.put("returnCode", ErrorCode.NO_ERROR);
 						obj.put("profileName", profileName);
-						ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
+						/*****************  retrieveTagsFromProfile  **************/
+						//on r�cup�re profileID
+						int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
+						//on r�cup�re les tagIDs li�s � profileID
+						ArrayList<String> listOfTagID = StorageService
+								.retrieveTagIDsFromProfileID(pseudo, password, profileID);
+						//on r�cup�re les tags li�s aux tagIDs
+						ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+						for(String TagID : listOfTagID) {
+							listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
+						}	
+						/************************************************************/
+						
+						//on remplit le json listTags
 						JSONArray arrayOfJsonTag = new JSONArray();
 
-						for(Tag tag : ListOfTag){
+						for(Tag tag : listOfTag){
 							JSONObject tagJson = new JSONObject();
 							try {
 							tagJson.put("tag_id", tag.getUid());
@@ -804,9 +795,22 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					JSONObject obj1 = new JSONObject();
 					JSONArray arrayOfJsonTag = new JSONArray();
 
-					for (String profileName : profileNames) {						
-						ArrayList<Tag> tagList = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);			
-						for (Tag tag : tagList) {							
+					for (String profileName : profileNames) {										
+						/*****************  retrieveTagsFromProfile  **************/
+						//on r�cup�re profileID
+						int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
+						//on r�cup�re les tagIDs li�s � profileID
+						ArrayList<String> listOfTagID = StorageService
+								.retrieveTagIDsFromProfileID(pseudo, password, profileID);
+						//on r�cup�re les tags li�s aux tagIDs
+						ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+						for(String TagID : listOfTagID) {
+							listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
+						}	
+						/************************************************************/
+						
+						//on consruit ArrayOfJsonTag
+						for (Tag tag : listOfTag) {						
 							JSONObject tagJson = new JSONObject();
 							try {
 								tagJson.put("tag_id", tag.getUid());
