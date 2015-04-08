@@ -43,7 +43,7 @@ public class NetworkService {
 	// http://92.222.33.38:8080/app_server/ns/login?pseudo=abc&password=xyz
 	public String login(@QueryParam("pseudo") String pseudo,
 			@QueryParam("password") String password)
-					throws IllegalFieldException, Exception, JSONException {
+			throws IllegalFieldException, Exception, JSONException {
 		Account account;
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.LOGIN);
@@ -53,19 +53,19 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 		} else
 
-			if (StorageService.checkLogin(pseudo, password)) {
-				account = StorageService.doLogin(pseudo, password);
+		if (StorageService.checkLogin(pseudo, password)) {
+			account = StorageService.doLogin(pseudo, password);
 
-				obj.put("returnCode", ErrorCode.NO_ERROR);
-				obj.put("pseudo", account.getPseudo());
-				obj.put("first_name", account.getFirstName());
-				obj.put("last_name", account.getLastName());
-				obj.put("email", account.getEMailAddress());
+			obj.put("returnCode", ErrorCode.NO_ERROR);
+			obj.put("pseudo", account.getPseudo());
+			obj.put("first_name", account.getFirstName());
+			obj.put("last_name", account.getLastName());
+			obj.put("email", account.getEMailAddress());
 
-			} else {
-				obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		} else {
+			obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 
-			}
+		}
 		return obj.toString();
 	}
 
@@ -148,21 +148,21 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_TAG_NAME);
 		} else
 
-			if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					if (StorageService.insertTag(id, pseudo, object_name, picture,
-							null)) {
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-					} else { // problem at the DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-					}
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				if (StorageService.insertTag(id, pseudo, object_name, picture,
+						null)) {
+					obj.put("returnCode", ErrorCode.NO_ERROR);
+				} else { // problem at the DB level
+					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 				}
-			} else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 
 		return obj.toString();
 	}
@@ -181,7 +181,7 @@ public class NetworkService {
 			@FormDataParam("id") String id,
 			@FormDataParam("object_name") String object_name,
 			@FormDataParam("picture_name") String picture_name)
-					throws Exception, JSONException {
+			throws Exception, JSONException {
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.ADD_TAG);
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -196,21 +196,21 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_TAG_PICTURE_NAME);
 		} else
 
-			if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					if (StorageService.insertTag(id, pseudo, object_name,
-							picture_name, picture)) {
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-					} else { // problem at the DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-					}
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				if (StorageService.insertTag(id, pseudo, object_name,
+						picture_name, picture)) {
+					obj.put("returnCode", ErrorCode.NO_ERROR);
+				} else { // problem at the DB level
+					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 				}
-			} else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 
 		return obj.toString();
 	}
@@ -224,7 +224,7 @@ public class NetworkService {
 	// http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
 	public Response downloadImageTag(@QueryParam("pseudo") String pseudo,
 			@QueryParam("password") String password, @QueryParam("id") String id)
-					throws Exception, JSONException {
+			throws Exception, JSONException {
 		ResponseBuilder response = null;
 		String picture_name = "";
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -234,7 +234,8 @@ public class NetworkService {
 		} else if (!FieldVerifier.verifyTagUID(id)) {
 
 		} else if (StorageService.checkLogin(pseudo, password)) {
-			picture_name = StorageService.retrieveTagFromTagID(id).getObjectImageName();
+			picture_name = StorageService.retrieveTagFromTagID(id)
+					.getObjectImageName();
 			InputStream in = StorageService.downloadImageTag(pseudo, id);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			int data = in.read();
@@ -263,7 +264,7 @@ public class NetworkService {
 	// http://92.222.33.38:8080/app_server/ns/deletetag?pseudo=abc&password=abc&object_name=xyz
 	public String deleteTag(@QueryParam("pseudo") String pseudo,
 			@QueryParam("password") String password, @QueryParam("id") String id)
-					throws Exception, JSONException {
+			throws Exception, JSONException {
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.DELETE_TAG);
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -274,20 +275,20 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
 		} else
 
-			if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					if (StorageService.deleteTag(id)) {
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-					} else { // issue at DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-					}
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				if (StorageService.deleteTag(id)) {
+					obj.put("returnCode", ErrorCode.NO_ERROR);
+				} else { // issue at DB level
+					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 				}
-			} else { // information incomplete
-				obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 		return obj.toString();
 	}
 
@@ -390,7 +391,7 @@ public class NetworkService {
 			@QueryParam("password") String password,
 			@QueryParam("profile_name") String profileName,
 			@QueryParam("new_profile_name") String newProfileName)
-					throws Exception, JSONException {
+			throws Exception, JSONException {
 		JSONObject obj = new JSONObject();
 		obj.put("modifyprofilename", TagCode.MODIFY_PROFILE_NAME);
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -442,29 +443,28 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 		} else
 
-			if (StorageService.checkLogin(pseudo, password)) {
+		if (StorageService.checkLogin(pseudo, password)) {
 
-				ArrayList<Tag> ListOfTag = StorageService.retrieveTags(pseudo,
-						password);
-				JSONArray arrayOfJsonTag = new JSONArray();
+			ArrayList<Tag> ListOfTag = StorageService.retrieveTags(pseudo,
+					password);
+			JSONArray arrayOfJsonTag = new JSONArray();
 
-				for (Tag tag : ListOfTag) {
-					JSONObject tagJson = new JSONObject();
-					try {
-						tagJson.put("tag_id", tag.getUid());
-						tagJson.put("object_name", tag.getObjectName());
-						tagJson.put("picture_name", tag.getObjectImageName());
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-					}
-					arrayOfJsonTag.put(tagJson);
+			for (Tag tag : ListOfTag) {
+				JSONObject tagJson = new JSONObject();
+				try {
+					tagJson.put("tag_id", tag.getUid());
+					tagJson.put("object_name", tag.getObjectName());
+					tagJson.put("picture_name", tag.getObjectImageName());
+				} catch (JSONException e) {
 				}
-				obj.put("returnCode", ErrorCode.NO_ERROR);
-				obj.put("listTags", arrayOfJsonTag);
-
-			} else { // wrong pseudo/password combination
-				obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+				arrayOfJsonTag.put(tagJson);
 			}
+			obj.put("returnCode", ErrorCode.NO_ERROR);
+			obj.put("listTags", arrayOfJsonTag);
+
+		} else { // wrong pseudo/password combination
+			obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		}
 		return obj.toString();
 	}
 
@@ -491,20 +491,20 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_EMAIL);
 		} else
 
-			if (StorageService.checkLogin(pseudo, password)) {
-				account = StorageService.doLogin(pseudo, password);
-				if ((account.getEMailAddress() != newEmail)
-						&& (StorageService.modifyEMailAdress(pseudo, newEmail))) {
-					account.setMailAddress(newEmail);
-					obj.put("returnCode", ErrorCode.NO_ERROR);
-					obj.put("email", account.getEMailAddress());
-				} else {
-					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-				}
+		if (StorageService.checkLogin(pseudo, password)) {
+			account = StorageService.doLogin(pseudo, password);
+			if ((account.getEMailAddress() != newEmail)
+					&& (StorageService.modifyEMailAdress(pseudo, newEmail))) {
+				account.setMailAddress(newEmail);
+				obj.put("returnCode", ErrorCode.NO_ERROR);
+				obj.put("email", account.getEMailAddress());
 			} else {
-				obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-
+				obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 			}
+		} else {
+			obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+
+		}
 		return obj.toString();
 	}
 
@@ -556,7 +556,7 @@ public class NetworkService {
 			@QueryParam("password") String password,
 			@QueryParam("id") String id,
 			@QueryParam("new_object_name") String newObjectName)
-					throws Exception, JSONException {
+			throws Exception, JSONException {
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.MODIFY_OBJECT_NAME);
 
@@ -570,17 +570,17 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_NEW_OBJECT_NAME);
 		} else
 
-			if (StorageService.checkLogin(pseudo, password)) {
-				if (StorageService.modifyTagName(id, newObjectName, pseudo)) {
-					obj.put("returnCode", ErrorCode.NO_ERROR);
-					obj.put("newobjectname", newObjectName);
-				} else {
-					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-				}
+		if (StorageService.checkLogin(pseudo, password)) {
+			if (StorageService.modifyTagName(id, newObjectName, pseudo)) {
+				obj.put("returnCode", ErrorCode.NO_ERROR);
+				obj.put("newobjectname", newObjectName);
 			} else {
-				obj.put("returnCode", ErrorCode.UNKNOWN_ERROR);
-
+				obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 			}
+		} else {
+			obj.put("returnCode", ErrorCode.UNKNOWN_ERROR);
+
+		}
 		return obj.toString();
 	}
 
@@ -606,16 +606,16 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 		} else
 
-			if (StorageService.checkLogin(pseudo, password)) {
-				if (StorageService.insertProfile(pseudo, profileName)) {
-					obj.put("returnCode", ErrorCode.NO_ERROR);
-				} else {
-					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-				}
+		if (StorageService.checkLogin(pseudo, password)) {
+			if (StorageService.insertProfile(pseudo, profileName)) {
+				obj.put("returnCode", ErrorCode.NO_ERROR);
 			} else {
-				obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-
+				obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 			}
+		} else {
+			obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+
+		}
 		return obj.toString();
 	}
 
@@ -687,6 +687,79 @@ public class NetworkService {
 		return obj.toString();
 	}
 
+	// HTTP POST Method
+	@POST
+	@Path("/createprofilewithtags")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	// Produces JSON as response
+	@Produces(MediaType.APPLICATION_JSON)
+	// Query parameters are parameters:
+	// http://92.222.33.38:8080/app_server/ns/createprofilewithtags
+	public String createProfileWithTags(@FormDataParam("pseudo") String pseudo,
+			@FormDataParam("password") String password,
+			@FormDataParam("profileName") String profileName,
+			@FormDataParam("jsonUIDs") String jsonUIDs) throws Exception,
+			JSONException {
+		JSONObject obj = new JSONObject();
+		obj.put("tag", TagCode.ADD_TAG);
+
+		ArrayList<String> listUIDs = new ArrayList<String>();
+
+		// on interprète le json pour remplir listUIDs
+		JSONObject jsonTemp = new JSONObject(jsonUIDs);
+		int i = 0;
+		// on utilise que JSON.get(missing key) = NULL
+		while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
+			listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
+			i++;
+		}
+
+		boolean bool = false;
+		for (int i1 = 0; i1 < listUIDs.size(); i1++) {
+			if (!FieldVerifier.verifyTagUID(listUIDs.get(i1))) {
+				bool = true;
+			}
+		}
+
+		if (!FieldVerifier.verifyName(pseudo)) {
+			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+		} else if (!FieldVerifier.verifyName(password)) {
+			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+		} else if (bool) {
+			obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+		} else if (!FieldVerifier.verifyName(profileName)) {
+			obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+		} else if (Utilities.isNotNull(pseudo)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				if (StorageService.insertProfile(pseudo, profileName)) {
+					// on effecctue l'insertion et un bool2 à côté pour le
+					// message
+					// d'erreur, qu'on fait après pour conserver la chaîne de
+					// if/else
+					boolean bool2 = false;
+					for (int i1 = 0; i1 < listUIDs.size(); i1++) {
+						if (StorageService.insertTagToProfile(pseudo,
+								profileName, listUIDs.get(i))) {
+							bool2 = true;
+						}
+					}
+					if (!bool2) { // problem at the DB level
+						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+					}
+				} else {
+					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+				}
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
+
+		return obj.toString();
+	}
+
 	// HTTP Get Method
 	@GET
 	@Path("/addtagtoprofile")
@@ -710,20 +783,20 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 		} else
 
-			if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(profileName)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					if (StorageService.insertTagToProfile(pseudo, profileName, id)) {
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-					} else { // problem at the DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-					}
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+		if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(profileName)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				if (StorageService.insertTagToProfile(pseudo, profileName, id)) {
+					obj.put("returnCode", ErrorCode.NO_ERROR);
+				} else { // problem at the DB level
+					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 				}
-			} else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 
 		return obj.toString();
 	}
@@ -749,46 +822,48 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 		} else
 
-			if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(profileName)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					obj.put("returnCode", ErrorCode.NO_ERROR);
-					obj.put("profileName", profileName);
-					
-					/*****************  retrieveTagsFromProfile  **************/
-					//on récupère profileID
-					int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
-					//on récupère les tagIDs liés à profileID
-					ArrayList<String> listOfTagID = StorageService
-							.retrieveTagIDsFromProfileID(pseudo, password, profileID);
-					//on récupère les tags liés aux tagIDs
-					ArrayList<Tag> listOfTag = new ArrayList<Tag>();
-					for(String TagID : listOfTagID) {
-						listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
-					}	
-					/************************************************************/
-					
-					//on remplit le json listTags
-					JSONArray arrayOfJsonTag = new JSONArray();
+		if (Utilities.isNotNull(pseudo) && Utilities.isNotNull(profileName)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				obj.put("returnCode", ErrorCode.NO_ERROR);
+				obj.put("profileName", profileName);
 
-					for (Tag tag : listOfTag) {
-						JSONObject tagJson = new JSONObject();
-						try {
-							tagJson.put("tag_id", tag.getUid());
-							tagJson.put("object_name", tag.getObjectName());
-							tagJson.put("picture", tag.getObjectImageName());
-						} catch (JSONException e) {
-						}
-						arrayOfJsonTag.put(tagJson);
-						obj.put("listTags", arrayOfJsonTag);
-					}
-
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+				/***************** retrieveTagsFromProfile **************/
+				// on récupère profileID
+				int profileID = StorageService
+						.retrieveProfileIDFromProfileName(pseudo, profileName);
+				// on récupère les tagIDs liés à profileID
+				ArrayList<String> listOfTagID = StorageService
+						.retrieveTagIDsFromProfileID(pseudo, password,
+								profileID);
+				// on récupère les tags liés aux tagIDs
+				ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+				for (String TagID : listOfTagID) {
+					listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
 				}
-			} else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+				/************************************************************/
+
+				// on remplit le json listTags
+				JSONArray arrayOfJsonTag = new JSONArray();
+
+				for (Tag tag : listOfTag) {
+					JSONObject tagJson = new JSONObject();
+					try {
+						tagJson.put("tag_id", tag.getUid());
+						tagJson.put("object_name", tag.getObjectName());
+						tagJson.put("picture", tag.getObjectImageName());
+					} catch (JSONException e) {
+					}
+					arrayOfJsonTag.put(tagJson);
+					obj.put("listTags", arrayOfJsonTag);
+				}
+
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 
 		return obj.toString();
 	}
@@ -803,8 +878,9 @@ public class NetworkService {
 	public String retrieveProfiles(@QueryParam("pseudo") String pseudo,
 			@QueryParam("password") String password) throws Exception,
 			JSONException {
-		
-		// on renvoie obj("returnCode"=?; "listProfiles"= obj1("profile1" = JSONArray(JSONtag ; JSONTag2;...) ; ... ) ) 
+
+		// on renvoie obj("returnCode"=?; "listProfiles"= obj1("profile1" =
+		// JSONArray(JSONtag ; JSONTag2;...) ; ... ) )
 		JSONObject obj = new JSONObject();
 		obj.put("tag", TagCode.RETRIEVE_PROFILES);
 		if (!FieldVerifier.verifyName(pseudo)) {
@@ -812,54 +888,57 @@ public class NetworkService {
 		} else if (!FieldVerifier.verifyName(password)) {
 			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 		} else
-			
-			if (Utilities.isNotNull(pseudo)) {
-				if (StorageService.checkLogin(pseudo, password)) {
-					obj.put("returnCode", ErrorCode.NO_ERROR);
-					ArrayList<String> profileNames = StorageService
-							.retrieveProfileNames(pseudo, password);
-					
-					JSONObject obj1 = new JSONObject();
-					JSONArray arrayOfJsonTag = new JSONArray();
 
-					for (String profileName : profileNames) {
-												
-						/*****************  retrieveTagsFromProfile  **************/
-						//on récupère profileID
-						int profileID = StorageService.retrieveProfileIDFromProfileName(pseudo, profileName);
-						//on récupère les tagIDs liés à profileID
-						ArrayList<String> listOfTagID = StorageService
-								.retrieveTagIDsFromProfileID(pseudo, password, profileID);
-						//on récupère les tags liés aux tagIDs
-						ArrayList<Tag> listOfTag = new ArrayList<Tag>();
-						for(String TagID : listOfTagID) {
-							listOfTag.add(StorageService.retrieveTagFromTagID(TagID));
-						}	
-						/************************************************************/
-						
-						//on consruit ArrayOfJsonTag
-						for (Tag tag : listOfTag) {
-							JSONObject tagJson = new JSONObject();
-							try {
-								tagJson.put("tag_id", tag.getUid());
-								tagJson.put("object_name", tag.getObjectName());
-								tagJson.put("picture", tag.getObjectImageName());
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-							}
-							arrayOfJsonTag.put(tagJson);
-						}
-						obj1.put(profileName, arrayOfJsonTag);
+		if (Utilities.isNotNull(pseudo)) {
+			if (StorageService.checkLogin(pseudo, password)) {
+				obj.put("returnCode", ErrorCode.NO_ERROR);
+				ArrayList<String> profileNames = StorageService
+						.retrieveProfileNames(pseudo, password);
+
+				JSONObject obj1 = new JSONObject();
+				JSONArray arrayOfJsonTag = new JSONArray();
+
+				for (String profileName : profileNames) {
+
+					/***************** retrieveTagsFromProfile **************/
+					// on récupère profileID
+					int profileID = StorageService
+							.retrieveProfileIDFromProfileName(pseudo,
+									profileName);
+					// on récupère les tagIDs liés à profileID
+					ArrayList<String> listOfTagID = StorageService
+							.retrieveTagIDsFromProfileID(pseudo, password,
+									profileID);
+					// on récupère les tags liés aux tagIDs
+					ArrayList<Tag> listOfTag = new ArrayList<Tag>();
+					for (String TagID : listOfTagID) {
+						listOfTag.add(StorageService
+								.retrieveTagFromTagID(TagID));
 					}
-					obj.put("listProfiles", obj1);
+					/************************************************************/
 
-				} else { // wrong pseudo/password combination
-					obj.put("returnCode",
-							ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+					// on consruit ArrayOfJsonTag
+					for (Tag tag : listOfTag) {
+						JSONObject tagJson = new JSONObject();
+						try {
+							tagJson.put("tag_id", tag.getUid());
+							tagJson.put("object_name", tag.getObjectName());
+							tagJson.put("picture", tag.getObjectImageName());
+						} catch (JSONException e) {
+						}
+						arrayOfJsonTag.put(tagJson);
+					}
+					obj1.put(profileName, arrayOfJsonTag);
 				}
-			} else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+				obj.put("listProfiles", obj1);
+
+			} else { // wrong pseudo/password combination
+				obj.put("returnCode",
+						ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
 			}
+		} else { // information incomplete
+			obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+		}
 
 		return obj.toString();
 	}
