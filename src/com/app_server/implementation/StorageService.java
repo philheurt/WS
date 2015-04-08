@@ -277,60 +277,37 @@ public class StorageService {
 			if (records > 0) {
 				deleteStatus = true;
 			}
-		} catch (SQLException sqle) {
-			sqle.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw sqle;
-		} catch (Exception e) {
-			e.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
-			}
-		}
-		//on effectue la deuxième seulement si la première a réussi
-		if (deleteStatus) {
-			Connection dbConn1 = null;
-			try {
-				dbConn1 = StorageService.createConnection();
-				java.sql.PreparedStatement preparedStatement = dbConn1.prepareStatement("DELETE FROM Profile WHERE profile_id = ?;");
-				preparedStatement.setInt( 1, profileID );					
+				java.sql.PreparedStatement preparedStatement1 = dbConn.prepareStatement("DELETE FROM Profile WHERE profile_id = ?;");
+				preparedStatement1.setInt( 1, profileID );					
 				//System.out.println(query);
-				int records = preparedStatement.executeUpdate();
+				int records1 = preparedStatement1.executeUpdate();
 				//System.out.println(records);
 				//When record is successfully inserted
-				if (records > 0) {
+				if (records1 > 0) {
 					deleteStatus1 = true;
 				}
 			} catch (SQLException sqle) {
 				sqle.printStackTrace();
-				if (dbConn1 != null) {
-					dbConn1.close();
+				if (dbConn != null) {
+					dbConn.close();
 				}
 				throw sqle;
 			} catch (Exception e) {
 				e.printStackTrace();
-				if (dbConn1 != null) {
-					dbConn1.close();
+				if (dbConn != null) {
+					dbConn.close();
 				}
 				throw e;
 			} finally {
-				if (dbConn1 != null) {
-					dbConn1.close();
+				if (dbConn != null) {
+					dbConn.close();
 				}
-			}
-		}
+			}		
 		//vaut true si les deux ont march� ... du coup si �a foire on ne sait pas dans laquelle des deux.. mais flemme de modifier
-		return deleteStatus&&deleteStatus1;
+		return deleteStatus1;
 	}
 	
-	public static boolean deleteTag(String tagID) throws SQLException, Exception {
+	public static boolean deleteTag(String pseudo,String tagID) throws SQLException, Exception {
 		
 		//plusieurs suppressions (on supprime d'abord des tables "relations_..")
 		//si la première connexion_suppression marche, on effectue la deuxième, etc.
@@ -341,16 +318,48 @@ public class StorageService {
 
 		Connection dbConn = null;
 		try {
-			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Relation_position_tag WHERE tag_id = ?;");
-			preparedStatement.setString( 1, tagID );					
-			//System.out.println(query);
-			int records = preparedStatement.executeUpdate();
-			//System.out.println(records);
-			//When record is successfully inserted
-			if (records > 0) {
-				deleteStatus = true;
-			}
+				dbConn = StorageService.createConnection();
+				java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Relation_position_tag WHERE tag_id = ?;");
+				preparedStatement.setString( 1, tagID );					
+				//System.out.println(query);
+				int records = preparedStatement.executeUpdate();
+				//System.out.println(records);
+				//When record is successfully inserted
+				if (records > 0) {
+					deleteStatus = true;
+				}
+
+				java.sql.PreparedStatement preparedStatement1 = dbConn.prepareStatement("DELETE FROM Relation_profile_tag WHERE tag_id = ?;");
+				preparedStatement1.setString( 1, tagID );					
+				//System.out.println(query);
+				int records1 = preparedStatement1.executeUpdate();
+				//System.out.println(records);
+				//When record is successfully inserted
+				if (records1 > 0) {
+					deleteStatus1 = true;
+				}		
+				java.sql.PreparedStatement preparedStatement2 = dbConn.prepareStatement("DELETE FROM Relation_user_tag WHERE pseudo = ? && tag_id = ?;");
+				preparedStatement.setString( 1, pseudo );
+				preparedStatement2.setString( 2, tagID );					
+				//System.out.println(query);
+				int records2 = preparedStatement2.executeUpdate();
+				//System.out.println(records);
+				//When record is successfully inserted
+				if (records2 > 0) {
+					deleteStatus2 = true;
+				}
+			
+				java.sql.PreparedStatement preparedStatement3 = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner=? && tag_id = ?;");
+				preparedStatement3.setString(1, pseudo);
+				preparedStatement3.setString( 2, tagID );					
+				//System.out.println(query);
+				int records3 = preparedStatement3.executeUpdate();
+				//System.out.println(records);
+				//When record is successfully inserted
+				if (records3 > 0) {
+					deleteStatus3 = true;
+				}
+				
 		} catch (SQLException sqle) {
 			sqle.printStackTrace();
 			if (dbConn != null) {
@@ -367,109 +376,9 @@ public class StorageService {
 			if (dbConn != null) {
 				dbConn.close();
 			}
-		}
-		//on effectue la deuxième seulement si la première a échoué
-		if (deleteStatus) {
-			Connection dbConn1 = null;
-			try {
-				dbConn1 = StorageService.createConnection();
-				java.sql.PreparedStatement preparedStatement = dbConn1.prepareStatement("DELETE FROM Relation_profile_tag WHERE tag_id = ?;");
-				preparedStatement.setString( 1, tagID );					
-				//System.out.println(query);
-				int records = preparedStatement.executeUpdate();
-				//System.out.println(records);
-				//When record is successfully inserted
-				if (records > 0) {
-					deleteStatus1 = true;
-				}
-			} catch (SQLException sqle) {
-				sqle.printStackTrace();
-				if (dbConn1 != null) {
-					dbConn1.close();
-				}
-				throw sqle;
-			} catch (Exception e) {
-				e.printStackTrace();
-				if (dbConn1 != null) {
-					dbConn1.close();
-				}
-				throw e;
-			} finally {
-				if (dbConn1 != null) {
-					dbConn1.close();
-				}
-			}
-			
-			
-			if (deleteStatus1) {
-				Connection dbConn2 = null;
-				try {
-					dbConn2 = StorageService.createConnection();
-					java.sql.PreparedStatement preparedStatement = dbConn2.prepareStatement("DELETE FROM Relation_user_tag WHERE tag_id = ?;");
-					preparedStatement.setString( 1, tagID );					
-					//System.out.println(query);
-					int records = preparedStatement.executeUpdate();
-					//System.out.println(records);
-					//When record is successfully inserted
-					if (records > 0) {
-						deleteStatus2 = true;
-					}
-				} catch (SQLException sqle) {
-					sqle.printStackTrace();
-					if (dbConn2 != null) {
-						dbConn2.close();
-					}
-					throw sqle;
-				} catch (Exception e) {
-					e.printStackTrace();
-					if (dbConn2 != null) {
-						dbConn2.close();
-					}
-					throw e;
-				} finally {
-					if (dbConn2 != null) {
-						dbConn2.close();
-					}
-				}
-				
-				
-				if (deleteStatus2) {
-					
-					Connection dbConn3 = null;
-					try {
-						dbConn3 = StorageService.createConnection();
-						java.sql.PreparedStatement preparedStatement = dbConn3.prepareStatement("DELETE FROM Tag WHERE tag_id = ?;");
-						preparedStatement.setString( 1, tagID );					
-						//System.out.println(query);
-						int records = preparedStatement.executeUpdate();
-						//System.out.println(records);
-						//When record is successfully inserted
-						if (records > 0) {
-							deleteStatus3 = true;
-						}
-					} catch (SQLException sqle) {
-						sqle.printStackTrace();
-						if (dbConn3 != null) {
-							dbConn3.close();
-						}
-						throw sqle;
-					} catch (Exception e) {
-						e.printStackTrace();
-						if (dbConn3 != null) {
-							dbConn3.close();
-						}
-						throw e;
-					} finally {
-						if (dbConn3 != null) {
-							dbConn3.close();
-						}
-					}
-					
-				}
-			}
-		}
+		}		
 		//vaut true si les 4 ont march� ... du coup si �a foire on ne sait pas dans laquelle des 4.. mais flemme de modifier
-		return deleteStatus&&deleteStatus1&&deleteStatus2&&deleteStatus3;
+		return deleteStatus;
 	}
 		
 	public static boolean updateProfileName(int profileID, String newProfileName)  throws SQLException, Exception {
@@ -511,14 +420,16 @@ public class StorageService {
 	public static int getProfileID(String pseudo, String profileName) throws SQLException, Exception {
 		
 		Connection dbConn = null;
-		int profileID;
+		int profileID = 0;
 		try {
 			dbConn = StorageService.createConnection();		
 			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT profile_id FROM Profile WHERE pseudo = ? AND profile_name = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, profileName);
 			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()){
 			profileID = rs.getInt("profile_id");
+			}
 		} catch (SQLException sqle) {
 			dbConn.close();
 			throw sqle;
@@ -566,41 +477,6 @@ public class StorageService {
 		} finally {
 			if (dbConn1 != null) {
 				dbConn1.close();
-			}
-		}
-		return deleteStatus;
-	}
-	
-	public static boolean deleteTag(String pseudo, String id) throws SQLException, Exception {
-		boolean deleteStatus = false;
-		Connection dbConn = null;
-		try {
-			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner = ? && tag_id = ?;");
-			preparedStatement.setString( 1, pseudo );
-			preparedStatement.setString( 2, id);					
-			//System.out.println(query);
-			int records = preparedStatement.executeUpdate();
-			//System.out.println(records);
-			//When record is successfully inserted
-			if (records > 0) {
-				deleteStatus = true;
-			}
-		} catch (SQLException sqle) {
-			sqle.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw sqle;
-		} catch (Exception e) {
-			e.printStackTrace();
-			if (dbConn != null) {
-				dbConn.close();
-			}
-			throw e;
-		} finally {
-			if (dbConn != null) {
-				dbConn.close();
 			}
 		}
 		return deleteStatus;

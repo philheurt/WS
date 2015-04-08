@@ -13,7 +13,7 @@ public class FieldVerifier {
     }
 
     public static boolean verifyEMailAddress(String email) {
-        return email.indexOf('@') >= 0;
+        return ((email.indexOf('@') >= 0)&&(email.length() < 40));
     }
 
     public static boolean verifyPassword(String password) {

@@ -52,7 +52,7 @@ public class NetworkService {
 				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 			}
 			else 
-				if(!FieldVerifier.verifyName(password)){
+				if(!FieldVerifier.verifyPassword(password)){
 					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 				}
 				else 
@@ -88,7 +88,7 @@ public class NetworkService {
 				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 			}
 			else 
-				if(!FieldVerifier.verifyName(password)){
+				if(!FieldVerifier.verifyPassword(password)){
 					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 				}
 				else 
@@ -108,22 +108,24 @@ public class NetworkService {
 				try {
 					if(StorageService.insertUser(pseudo, password, first_name, last_name, email)){						
 						returnCode = ErrorCode.NO_ERROR;
+						obj.put("returncode", returnCode);	
 					}else{
 						returnCode = ErrorCode.DATABASE_ACCESS_ISSUE;			
-						
+						obj.put("returncode", returnCode);	
 					}
 				} catch(SQLException sqle){					
 					//When Primary key violation occurs that means user is already registered
 					if(sqle.getErrorCode() == 1062){
 						returnCode = ErrorCode.USER_ALREADY_REGISTERED;
+						obj.put("returncode", returnCode);	
 					} 
 					//When special characters are used in pseudo, password, first_name, last_name, email)
 					else if(sqle.getErrorCode() == 1064){
 						returnCode = ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER;
+						obj.put("returncode", returnCode);	
 					}
 				}
-													
-					obj.put("returncode", returnCode);		
+														
 			return obj.toString();
 					
 		}
@@ -141,7 +143,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -156,16 +158,25 @@ public class NetworkService {
 						
 		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
 			if (StorageService.checkLogin(pseudo, password)){			
+				try{
 				if(StorageService.insertTag(id, pseudo, object_name, picture, null)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);		
 				}else{ // problem at the DB level
 						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
 				}
+				}catch(SQLException sqle){					
+					//When Primary key violation occurs that means user is already registered
+					if(sqle.getErrorCode() == 1062){
+						obj.put("returnCode", ErrorCode.TAG_ALREADY_REGISTERED);
+					} 
+					//When special characters are used in pseudo, password, first_name, last_name, email)
+					else if(sqle.getErrorCode() == 1064){
+						obj.put("returnCode", ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);
+					}}
 			}else{ // wrong pseudo/password combination
 					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
 			}
-		}
-		else { // information incomplete
+		}else { // information incomplete
 				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
 		}
 		
@@ -186,7 +197,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -203,20 +214,29 @@ public class NetworkService {
 						}
 						else 
 						
-		if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
-			if (StorageService.checkLogin(pseudo, password)){			
-				if(StorageService.insertTag(id, pseudo, object_name, picture_name, picture)){
-						obj.put("returnCode", ErrorCode.NO_ERROR);		
-				}else{ // problem at the DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
-				}
-			}else{ // wrong pseudo/password combination
-					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-			}
-		}
-		else { // information incomplete
-				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
-		}
+							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(object_name)){
+								if (StorageService.checkLogin(pseudo, password)){			
+									try{
+									if(StorageService.insertTag(id, pseudo, object_name, picture_name, picture)){
+											obj.put("returnCode", ErrorCode.NO_ERROR);		
+									}else{ // problem at the DB level
+											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+									}
+									}catch(SQLException sqle){					
+										//When Primary key violation occurs that means user is already registered
+										if(sqle.getErrorCode() == 1062){
+											obj.put("returnCode", ErrorCode.TAG_ALREADY_REGISTERED);
+										} 
+										//When special characters are used in pseudo, password, first_name, last_name, email)
+										else if(sqle.getErrorCode() == 1064){
+											obj.put("returnCode", ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);
+										}}
+								}else{ // wrong pseudo/password combination
+										obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+								}
+							}else { // information incomplete
+									obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+							}
 		
 	return obj.toString();		
 	}
@@ -234,7 +254,7 @@ public class NetworkService {
 						
 					}
 					else 
-						if(!FieldVerifier.verifyName(password)){
+						if(!FieldVerifier.verifyPassword(password)){
 							
 						}
 						else 
@@ -276,7 +296,7 @@ public class NetworkService {
 					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 				}
 				else 
-					if(!FieldVerifier.verifyName(password)){
+					if(!FieldVerifier.verifyPassword(password)){
 						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 					}
 					else 
@@ -287,7 +307,7 @@ public class NetworkService {
 							
 				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
-						if(StorageService.deleteTag(id)){						
+						if(StorageService.deleteTag(pseudo,id)){						
 								obj.put("returnCode", ErrorCode.NO_ERROR);	
 						}else{ // issue at DB level
 								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
@@ -303,49 +323,49 @@ public class NetworkService {
 			}
 						
 	// HTTP Get Method
-						@GET 
-						// Path: http://92.222.33.38:8080/app_server/ns/removetagfromprofile
-						@Path("/removetagfromprofile")
-						// Produces JSON as response
-						@Produces(MediaType.APPLICATION_JSON) 
-						// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removetagfromprofile?pseudo=abc&password=abc&id=xyz&profile_name=abc
-		public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
-							JSONObject obj = new JSONObject();
-							obj.put("removetagfromprofile", TagCode.DELETE_TAG_FROM_PROFILE);
-							if(!FieldVerifier.verifyName(pseudo)){
-								obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-							}
-							else 
-								if(!FieldVerifier.verifyName(password)){
-									obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-								}
-								else 
-									if(!FieldVerifier.verifyTagUID(id)){
-										obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
-									}
-									else 
-										if(!FieldVerifier.verifyName(profileName)){
-											obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
-										}
-										
-							if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
-								if (StorageService.checkLogin(pseudo, password)){
-									//traitement d'erreur ?
-									int profileID = StorageService.getProfileID(pseudo, profileName);
-									if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){						
-											obj.put("returnCode", ErrorCode.NO_ERROR);	
-									}else{ // issue at DB level
-											obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-									}
-								}else{ // wrong pseudo/password combination
-										obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-								}
-							}
-							else { // information incomplete
-									obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
-							}
-						return obj.toString();		
+		@GET 
+		// Path: http://92.222.33.38:8080/app_server/ns/removetagfromprofile
+		@Path("/removetagfromprofile")
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON) 
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removetagfromprofile?pseudo=abc&password=abc&id=xyz&profile_name=abc
+public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("id") String id, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
+			JSONObject obj = new JSONObject();
+			obj.put("removetagfromprofile", TagCode.DELETE_TAG_FROM_PROFILE);
+			if(!FieldVerifier.verifyName(pseudo)){
+				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+			}
+			else 
+				if(!FieldVerifier.verifyPassword(password)){
+					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+				}
+				else 
+					if(!FieldVerifier.verifyTagUID(id)){
+						obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+					}
+					else 
+						if(!FieldVerifier.verifyName(profileName)){
+							obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 						}
+						
+			if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
+				if (StorageService.checkLogin(pseudo, password)){
+					//traitement d'erreur ?
+					int profileID = StorageService.getProfileID(pseudo, profileName);
+					if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){						
+							obj.put("returnCode", ErrorCode.NO_ERROR);	
+					}else{ // issue at DB level
+							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+					}
+				}else{ // wrong pseudo/password combination
+						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+				}
+			}
+			else { // information incomplete
+					obj.put("returnCode", ErrorCode.INFORMATION_INCOMPLETE);	
+			}
+		return obj.toString();		
+		}
 												
 	// HTTP Get Method
 			@GET 
@@ -356,12 +376,12 @@ public class NetworkService {
 			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/removeprofile?pseudo=abc&password=abc&profile_name=abc
 		public String removeProfile(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName) throws Exception, JSONException{
 				JSONObject obj = new JSONObject();
-				obj.put("removeprofile", TagCode.DELETE_PROFILE);
+				obj.put("tag", TagCode.DELETE_PROFILE);
 				if(!FieldVerifier.verifyName(pseudo)){
 					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 				}
 				else 
-					if(!FieldVerifier.verifyName(password)){
+					if(!FieldVerifier.verifyPassword(password)){
 						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 					}
 					else 
@@ -402,7 +422,7 @@ public class NetworkService {
 					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 				}
 				else 
-					if(!FieldVerifier.verifyName(password)){
+					if(!FieldVerifier.verifyPassword(password)){
 						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 					}
 					else 
@@ -447,7 +467,7 @@ public class NetworkService {
 				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 			}
 			else 
-				if(!FieldVerifier.verifyName(password)){
+				if(!FieldVerifier.verifyPassword(password)){
 					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 				}
 				else 
@@ -492,7 +512,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -532,11 +552,11 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
-				if(!FieldVerifier.verifyName(newPassword)){
+				if(!FieldVerifier.verifyPassword(newPassword)){
 					obj.put("returnCode", ErrorCode.MISSING_NEW_PASSWORD);
 				}
 				else 
@@ -569,7 +589,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -611,25 +631,35 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else 
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
-				if(!FieldVerifier.verifyEMailAddress(profileName)){
+				if(!FieldVerifier.verifyName(profileName)){
 					obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
 				}
 				else 
 				
-		if(StorageService.checkLogin(pseudo,password)){			
-			if (StorageService.insertProfile(pseudo, profileName)){
-				obj.put("returnCode", ErrorCode.NO_ERROR);	
-			}else{
-					obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																
-			}
-		}else{
-			obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
-	
-	}
+						if (StorageService.checkLogin(pseudo, password)){			
+							try{
+							if(StorageService.insertProfile(pseudo, profileName)){
+									obj.put("returnCode", ErrorCode.NO_ERROR);		
+							}else{ // problem at the DB level
+									obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+							}
+							}catch(SQLException sqle){					
+								//When Primary key violation occurs that means user is already registered
+								if(sqle.getErrorCode() == 1062){
+									obj.put("returnCode", ErrorCode.TAG_ALREADY_REGISTERED);
+								} 
+								//When special characters are used in pseudo, password, first_name, last_name, email)
+								else if(sqle.getErrorCode() == 1064){
+									obj.put("returnCode", ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);
+								}}
+						}else{ // wrong pseudo/password combination
+								obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+						}										
+					
 		return obj.toString();
 	}	
 	
@@ -646,7 +676,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else						
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -660,7 +690,8 @@ public class NetworkService {
 						else 
 						
 		if(Utilities.isNotNull(pseudo) &&Utilities.isNotNull(profileName)){
-			if (StorageService.checkLogin(pseudo, password)){			
+			if (StorageService.checkLogin(pseudo, password)){
+				try{
 				if(StorageService.insertTagToProfile(pseudo, profileName, id)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);
 						ArrayList<Tag> ListOfTag = StorageService.retrieveTagsFromProfile(pseudo, password, profileName);
@@ -677,13 +708,20 @@ public class NetworkService {
 							}	
 							arrayOfJsonTag.put(tagJson);	
 							obj.put("listTags", arrayOfJsonTag);
-						}	
-				}else{ // problem at the DB level
-						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+						}
 				}
+				}catch(SQLException sqle){					
+					//When Primary key violation occurs that means user is already registered
+					if(sqle.getErrorCode() == 1062){
+						obj.put("returnCode", ErrorCode.TAG_ALREADY_REGISTERED);
+					} 
+					//When special characters are used in pseudo, password, first_name, last_name, email)
+					else if(sqle.getErrorCode() == 1064){
+						obj.put("returnCode", ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);
+					}}
 			}else{ // wrong pseudo/password combination
 					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
-			}
+			}		
 		}
 		else { // information incomplete
 				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
@@ -705,7 +743,7 @@ public class NetworkService {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 		}
 		else						
-			if(!FieldVerifier.verifyName(password)){
+			if(!FieldVerifier.verifyPassword(password)){
 				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 			}
 			else 
@@ -755,7 +793,7 @@ public class NetworkService {
 		obj.put("tag", TagCode.RETRIEVE_PROFILES);
 		if (!FieldVerifier.verifyName(pseudo)) {
 			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-		} else if (!FieldVerifier.verifyName(password)) {
+		} else if (!FieldVerifier.verifyPassword(password)) {
 			obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
 		} else
 			

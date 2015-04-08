@@ -21,6 +21,7 @@ public class ErrorCode {
 	public final static int ILLEGAL_USE_OF_SPECIAL_CHARACTER = 12;
 	public final static int DATABASE_ACCESS_ISSUE = 13;
 	public final static int INFORMATION_INCOMPLETE = 14;
+	public final static int TAG_ALREADY_REGISTERED =15;
 	
 	public final static int UNKNOWN_ERROR = 666;
 	
