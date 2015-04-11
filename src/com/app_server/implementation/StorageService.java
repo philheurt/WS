@@ -198,7 +198,7 @@ public class StorageService {
 			preparedStatement.setString(1, id);
 			preparedStatement.setString( 2, pseudo );
 			preparedStatement.setString( 3, object_name);
-			preparedStatement.setInt( 4, 1);
+			preparedStatement.setInt( 4, 0);
 			preparedStatement.setBinaryStream( 5, picture);					
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
@@ -940,4 +940,65 @@ public class StorageService {
 		}
 		return date;
 	}
+	
+	public static void modifyLastTagsUpdateTime(String pseudo) throws SQLException, Exception {
+		Connection dbConn = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE USER SET tags_change_time = NOW() WHERE pseudo = ?;");
+			preparedStatement.setString( 1, pseudo );
+
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+	}
+	
+	public static void modifyLastProfilesUpdateTime(String pseudo) throws SQLException, Exception {
+		Connection dbConn = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE USER SET profiles_change_time = NOW() WHERE pseudo = ?;");
+			preparedStatement.setString( 1, pseudo );
+
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+	}
+	
 }

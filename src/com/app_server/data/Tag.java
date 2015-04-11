@@ -13,6 +13,7 @@ public class Tag
 	
 	private List<Position> lastPositions;
 	
+	private int imageVersion;
 
 	public Tag(String uid, String objectName)
 	{
@@ -83,5 +84,13 @@ public class Tag
 	{
 		return (!(obj instanceof Tag)) ? false : 
 					uid.equals(((Tag) obj).getUid());
+	}
+
+	public int getImageVersion() {
+		return imageVersion;
+	}
+
+	public void setImageVersion(int imageVersion) {
+		this.imageVersion = imageVersion;
 	}
 }
