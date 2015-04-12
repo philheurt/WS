@@ -1000,5 +1000,38 @@ public class StorageService {
 			}
 		}
 	}
+	public static boolean modifyImageTag(String id, InputStream picture) throws Exception {
+		Connection dbConn = null;
+		boolean modifyImageTag = false;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE TAG SET picture = ?, picture_version = picture_version + 1 WHERE tag_id = ?;");
+			preparedStatement.setBinaryStream( 1, picture);
+			preparedStatement.setString(2,id);
+
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyImageTag = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyImageTag;
+	}
 	
 }

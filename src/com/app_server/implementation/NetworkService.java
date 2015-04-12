@@ -247,6 +247,60 @@ public class NetworkService {
 	return obj.toString();		
 	}
 	
+	// HTTP POST Method
+		@POST 					
+		@Path("/modifyobjectimage")
+		@Consumes(MediaType.MULTIPART_FORM_DATA)
+		// Produces JSON as response
+		@Produces(MediaType.APPLICATION_JSON) 
+		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
+			public String modifyObjectImage( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id) throws Exception, JSONException{
+			JSONObject obj = new JSONObject();
+			obj.put("tag", TagCode.ADD_TAG);
+			if(!FieldVerifier.verifyName(pseudo)){
+				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+			}
+			else 
+				if(!FieldVerifier.verifyPassword(password)){
+					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+				}
+				else 
+					if(!FieldVerifier.verifyTagUID(id)){
+						obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+					}
+					else 
+						
+							
+								if(Utilities.isNotNull(pseudo)){
+									if (StorageService.checkLogin(pseudo, password)){			
+										try{
+										if(StorageService.modifyImageTag(id,picture)){
+												obj.put("returnCode", ErrorCode.NO_ERROR);	
+												StorageService.modifyLastTagsUpdateTime(pseudo);
+												obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
+												obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
+										
+										}else{ // problem at the DB level
+												obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);	
+										}
+										}catch(SQLException sqle){					
+											//When Primary key violation occurs that means user is already registered
+											if(sqle.getErrorCode() == 1062){
+												obj.put("returnCode", ErrorCode.TAG_ALREADY_REGISTERED);
+											} 
+											//When special characters are used in pseudo, password, first_name, last_name, email)
+											else if(sqle.getErrorCode() == 1064){
+												obj.put("returnCode", ErrorCode.ILLEGAL_USE_OF_SPECIAL_CHARACTER);
+											}}
+									}else{ // wrong pseudo/password combination
+											obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);	
+									}
+								}else { // information incomplete
+										obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);	
+								}
+			
+		return obj.toString();		
+		}
 	// HTTP Get Method
 				@GET 
 				// Path: http://92.222.33.38:8080/app_server/ns/deletetag
