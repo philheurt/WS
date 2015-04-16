@@ -82,7 +82,8 @@ public class StorageService {
      */
 	
 	private static Account map( ResultSet resultSet ) throws SQLException {
-	    Account account = new Account (resultSet.getString( "pseudo" ), resultSet.getString( "first_name" ),resultSet.getString( "last_name" ),resultSet.getString( "email" ));	  
+	    Account account = new Account (resultSet.getString( "pseudo" ), resultSet.getString( "first_name" ),resultSet.getString( "last_name" ),resultSet.getString( "email" )); 
+	    account.setBraceletUID(resultSet.getString("braceletUID"));	  
 	    return account;
 	}
 	
@@ -101,7 +102,7 @@ public class StorageService {
 		Account account = null;
 		try {
 			dbConn = StorageService.createConnection();		
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email FROM User WHERE pseudo = ? AND password = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT pseudo,first_name,last_name,email,braceletUID FROM User WHERE pseudo = ? AND password = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			ResultSet rs = preparedStatement.executeQuery();
@@ -139,17 +140,18 @@ public class StorageService {
 	 * 
 	 */
 	
-	public static boolean insertUser(String pseudo, String password, String first_name, String last_name, String email) throws SQLException, Exception {
+	public static boolean insertUser(String pseudo, String password, String first_name, String last_name, String email, String braceletUID) throws SQLException, Exception {
 		boolean insertStatus = false;
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email,tags_change_time,profiles_change_time) values(?,?,?,?,?,NOW(),NOW());");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("INSERT into User(pseudo, password, first_name, last_name, email, braceletUID, personal_information_change_time, tags_change_time,profiles_change_time) values(?,?,?,?,?,?,NOW(),NOW(),NOW());");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, Utilities.hashPassword(password));
 			preparedStatement.setString( 3, first_name );
 			preparedStatement.setString( 4, last_name);
-			preparedStatement.setString( 5, email );						
+			preparedStatement.setString( 5, email );
+			preparedStatement.setString( 6, braceletUID );
 			int records = preparedStatement.executeUpdate();
 			//When record is successfully inserted
 			if (records > 0) {
@@ -596,6 +598,39 @@ public class StorageService {
 		return modifyEMailAdress;
 	}
 	
+	public static boolean modifyBraceletUID(String pseudo, String braceletUID) throws SQLException, Exception {
+		boolean modifyBraceletUID = false;
+		Connection dbConn = null;
+		try {
+			dbConn = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET braceletUID = ? WHERE pseudo = ?;");
+			preparedStatement.setString( 1, braceletUID );
+			preparedStatement.setString( 2, pseudo);					
+			int records = preparedStatement.executeUpdate();
+			//When record is successfully inserted
+			if (records > 0) {
+				modifyBraceletUID = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return modifyBraceletUID;
+	}
+	
 	public static boolean modifyTagName(String id, String newObjectName, String pseudo) throws SQLException, Exception {
 		boolean modifyTagName = false;
 		Connection dbConn = null;
@@ -907,7 +942,38 @@ public class StorageService {
 		}
 		return date;
 	}
-	
+	public static Date retrieveLastPersonalInformationUpdateTime(String pseudo, String password) throws Exception{
+		Connection dbConn = null;
+		Date date = null;
+		try {
+			dbConn = StorageService.createConnection();
+			if(StorageService.checkLogin(pseudo, password)){
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT personal_information_change_time FROM User where pseudo = ? ;");
+			preparedStatement.setString( 1, pseudo );			
+			ResultSet rs = preparedStatement.executeQuery();
+			if(rs.next()) {
+				date = rs.getDate("personal_information_change_time");
+			}
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn != null) {
+				dbConn.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn != null) {
+				dbConn.close();
+			}
+		}
+		return date;
+	}
 	public static Date retrieveLastProfilesUpdateTime(String pseudo, String password) throws Exception{
 		Connection dbConn = null;
 		Date date = null;

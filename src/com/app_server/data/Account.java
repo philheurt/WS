@@ -9,6 +9,8 @@ public class Account
 	private String firstName;
 	private String lastName;
 	private String emailAddress;
+
+    private String braceletUID;
 	
 	private List<Tag> tags;
 	private List<Profile> profils;
@@ -33,7 +35,7 @@ public class Account
 		return tags;
 	}
 
-	public List<Profile> getProfils()
+	public List<Profile> getProfiles()
 	{
 		return profils;
 	}
@@ -42,14 +44,6 @@ public class Account
 	{
 		return pseudo;
 	}
-
-
-    public void setPseudo(String pseudo) {
-
-        if(pseudo == null)
-         throw new NullPointerException();
-        this.pseudo = pseudo; }
-
 
 	public String getFirstName()
 	{
@@ -62,7 +56,6 @@ public class Account
 			throw new NullPointerException();
 		this.firstName = firstName;
 	}
-
 
 	public String getLastName()
 	{
@@ -89,9 +82,22 @@ public class Account
 		this.emailAddress = emailAddress;
 	}
 
-	public boolean equals(Object obj)
+    public String getBraceletUID() {
+        return braceletUID;
+    }
+
+    public void setBraceletUID(String braceletUID) {
+        this.braceletUID = braceletUID;
+    }
+
+    public boolean equals(Object obj)
 	{
-		return (!(obj instanceof Account)) ? false : 
-					pseudo.equals(((Account) obj).getPseudo());
+		return (obj instanceof Account) && pseudo.equals(((Account) obj).getPseudo());
 	}
+
+	public int hashCode()
+	{
+		return pseudo.hashCode();
+	}
+	
 }
