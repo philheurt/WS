@@ -2,6 +2,7 @@ package com.app_server.implementation;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.log4j.Logger;
+
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
 
@@ -907,10 +909,10 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
 					i++;
 				}
-
+				Object uidArray[] = listUIDs.toArray();
 				boolean bool = false;
-				for (int i1 = 0; i1 < listUIDs.size(); i1++) {
-					if (!FieldVerifier.verifyTagUID(listUIDs.get(i1))) {
+				for (int i1 = 0; i1 < uidArray.length; i1++) {
+					if (!FieldVerifier.verifyTagUID((String) uidArray[i1])) {
 						bool = true;
 					}
 				}
@@ -926,7 +928,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					if (StorageService.checkLogin(pseudo, password)) {
 						int profileID = StorageService.getProfileID(pseudo, profileName);
 						
-						if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){		
+						if(StorageService.deleteAllTagsFromProfile(pseudo, profileID)){		
 							// on effectue l'insertion et un bool2 � c�t� pour le
 							// message
 							// d'erreur, qu'on fait apr�s pour conserver la cha�ne de
@@ -937,9 +939,9 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 							
 							boolean bool2 = true;
 							
-							Object uidArray[] = listUIDs.toArray();
+						
 							
-							for (int i1 = 0; bool2 && i1 < uidArray.size(); i1++) {
+							for (int i1 = 0; bool2 && i1 < uidArray.length; i1++) {
 								if (! StorageService.insertTagToProfile(pseudo,
 										profileName, (String) uidArray[i1])) {
 									bool2 = false;
