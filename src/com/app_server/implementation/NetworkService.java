@@ -67,7 +67,8 @@ public class NetworkService {
 					obj.put("email", account.getEMailAddress());
 					obj.put("braceletUID",account.getBraceletUID() == null ? "" : account.getBraceletUID() );
 					obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
-					obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
+					obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
+					obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
 			
 			}else{	
 					obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);			
@@ -164,7 +165,8 @@ public class NetworkService {
 			if (StorageService.checkLogin(pseudo, password)){			
 				try{
 				if(StorageService.insertTag(id, pseudo, object_name, null)){
-						obj.put("returnCode", ErrorCode.NO_ERROR);					
+						obj.put("returnCode", ErrorCode.NO_ERROR);
+						obj.put("oldlasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 						StorageService.modifyLastTagsUpdateTime(pseudo);
 						obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 						obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
@@ -224,6 +226,7 @@ public class NetworkService {
 									try{
 									if(StorageService.insertTag(id, pseudo, object_name, picture)){
 											obj.put("returnCode", ErrorCode.NO_ERROR);	
+											obj.put("oldlasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 											StorageService.modifyLastTagsUpdateTime(pseudo);
 											obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 											obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -279,6 +282,7 @@ public class NetworkService {
 										try{
 										if(StorageService.modifyImageTag(id,picture)){
 												obj.put("returnCode", ErrorCode.NO_ERROR);	
+												obj.put("oldlasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 												StorageService.modifyLastTagsUpdateTime(pseudo);
 												obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 												obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -371,7 +375,8 @@ public class NetworkService {
 				if(Utilities.isNotNull(pseudo) && Utilities.isNotNull(password)){
 					if (StorageService.checkLogin(pseudo, password)){
 						if(StorageService.deleteTag(pseudo,id)){						
-								obj.put("returnCode", ErrorCode.NO_ERROR);	
+								obj.put("returnCode", ErrorCode.NO_ERROR);
+								obj.put("oldlasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 								StorageService.modifyLastTagsUpdateTime(pseudo);
 								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -421,6 +426,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					int profileID = StorageService.getProfileID(pseudo, profileName);
 					if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){						
 							obj.put("returnCode", ErrorCode.NO_ERROR);	
+							obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 							StorageService.modifyLastProfilesUpdateTime(pseudo);
 							obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 							obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -466,6 +472,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 						int profileID = StorageService.getProfileID(pseudo, profileName);
 						if(StorageService.deleteProfile(profileID)){						
 								obj.put("returnCode", ErrorCode.NO_ERROR);	
+								obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 								StorageService.modifyLastProfilesUpdateTime(pseudo);
 								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -515,6 +522,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 						int profileID = StorageService.getProfileID(pseudo, profileName);
 						if(StorageService.updateProfileName(profileID, newProfileName)){						
 								obj.put("returnCode", ErrorCode.NO_ERROR);	
+								obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 								StorageService.modifyLastProfilesUpdateTime(pseudo);
 								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
@@ -606,7 +614,9 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			account = StorageService.doLogin(pseudo, password);				
 			if ((account.getEMailAddress()!=newEmail)&&(StorageService.modifyEMailAdress(pseudo, newEmail))){
 				account.setMailAddress(newEmail);												
-				obj.put("returnCode",ErrorCode.NO_ERROR);		
+				obj.put("returnCode",ErrorCode.NO_ERROR);
+				obj.put("oldlastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
+				StorageService.modifyLastPersonalInformationUpdateTime(pseudo);
 				obj.put("email", account.getEMailAddress());
 				obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 				obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
@@ -668,37 +678,39 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 	// Produces JSON as response
 	@Produces(MediaType.APPLICATION_JSON) 
 	// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyAccount?pseudo=abc&password=xyz&newPseudo=abc&newPassword=xyz&newFirstName=abc&newLastName=abc&newEmail=abc@xyz.com
-public String modifybraceletUID(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("braceletuid") String braceletUID) throws Exception, JSONException{
-JSONObject obj = new JSONObject();
-obj.put("tag", TagCode.MODIFY_EMAIL);
-if(!FieldVerifier.verifyName(pseudo)){
-obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-}
-else 
-if(!FieldVerifier.verifyPassword(password)){
-	obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-}
-else 
-	if(!FieldVerifier.verifyTagUID(braceletUID)){
-		obj.put("returnCode", ErrorCode.MISSING_EMAIL);
-	}
-	else 
-	
-if(StorageService.checkLogin(pseudo,password)){			
-if (StorageService.modifyBraceletUID(pseudo, braceletUID)){												
-	obj.put("returnCode",ErrorCode.NO_ERROR);		
-	obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
-	obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
-	obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());			
-}else{
-		obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																
-}
-}else{
-obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
+	public String modifybraceletUID(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("braceletuid") String braceletUID) throws Exception, JSONException{
+		JSONObject obj = new JSONObject();
+		obj.put("tag", TagCode.MODIFY_EMAIL);
+		if(!FieldVerifier.verifyName(pseudo)){
+			obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+		}
+		else 
+			if(!FieldVerifier.verifyPassword(password)){
+				obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+			}
+			else 
+				if(!FieldVerifier.verifyTagUID(braceletUID)){
+					obj.put("returnCode", ErrorCode.MISSING_EMAIL);
+				}
+				else 
 
-}
-return obj.toString();
-}	
+					if(StorageService.checkLogin(pseudo,password)){			
+						if (StorageService.modifyBraceletUID(pseudo, braceletUID)){												
+							obj.put("returnCode",ErrorCode.NO_ERROR);
+							obj.put("oldlastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
+							StorageService.modifyLastPersonalInformationUpdateTime(pseudo);
+							obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
+							obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
+							obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());			
+						}else{
+							obj.put("returnCode",ErrorCode.DATABASE_ACCESS_ISSUE);																
+						}
+					}else{
+						obj.put("returnCode", ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
+
+					}
+		return obj.toString();
+	}
 	
 	// HTTP Get Method
 	@GET 
@@ -733,6 +745,7 @@ return obj.toString();
 			{						
 				obj.put("returnCode", ErrorCode.NO_ERROR);		
 				obj.put("newobjectname", newObjectName);
+				obj.put("oldlasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 				StorageService.modifyLastTagsUpdateTime(pseudo);
 				obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 				obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
@@ -774,6 +787,7 @@ return obj.toString();
 							try{
 							if(StorageService.insertProfile(pseudo, profileName)){
 									obj.put("returnCode", ErrorCode.NO_ERROR);	
+									obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 									StorageService.modifyLastProfilesUpdateTime(pseudo);
 									obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 									obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());	
@@ -851,6 +865,7 @@ return obj.toString();
 						}
 					} else {
 						obj.put("returnCode", ErrorCode.NO_ERROR);
+						obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 						StorageService.modifyLastProfilesUpdateTime(pseudo);
 						obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 						obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
@@ -898,8 +913,9 @@ return obj.toString();
 				try{
 				if(StorageService.insertTagToProfile(pseudo, profileName, id)){
 						obj.put("returnCode", ErrorCode.NO_ERROR);
+						obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 						StorageService.modifyLastProfilesUpdateTime(pseudo);
-						obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
+						obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());
 						obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 						obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());			
 						}				
@@ -1149,4 +1165,38 @@ return obj.toString();
 					}
 				return obj.toString();
 			}
+
+
+				// HTTP Get Method
+				@GET
+				@Path("/getlastupdatetimes")
+				// Produces JSON as response
+				@Produces(MediaType.APPLICATION_JSON)
+				// Query parameters are parameters:
+				// http://92.222.33.38:8080/app_server/ns/retrieveprofiles?pseudo=abc&password=abc
+				public String lastUpdateTimes(@QueryParam("pseudo") String pseudo,@QueryParam("password") String password) throws Exception,JSONException {
+					JSONObject obj = new JSONObject();
+					obj.put("tag", TagCode.GET_LAST_UPDATE_TIMES);
+					if (!FieldVerifier.verifyName(pseudo)) {
+						obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+					} else if (!FieldVerifier.verifyPassword(password)) {
+						obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+					} else
+
+						if (Utilities.isNotNull(pseudo)) {
+							if (StorageService.checkLogin(pseudo, password)) {							
+								obj.put("returnCode", ErrorCode.NO_ERROR);		
+								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());						
+								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
+								obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
+
+							} else { // wrong pseudo/password combination
+								obj.put("returnCode",
+										ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+							}
+						} else { // information incomplete
+							obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+						}
+					return obj.toString();
+				}
 }
