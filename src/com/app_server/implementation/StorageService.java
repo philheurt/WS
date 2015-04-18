@@ -232,7 +232,7 @@ public class StorageService {
 		InputStream in = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("Select picture FROM Tag WHERE pseudo_owner = ? && tag_id = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("Select picture FROM Tag WHERE pseudo_owner = ? AND tag_id = ?;");
 			preparedStatement.setString( 1, pseudo );
 			preparedStatement.setString( 2, id);					
 			//System.out.println(query);
@@ -341,7 +341,7 @@ public class StorageService {
 				if (records1 > 0) {
 					deleteStatus1 = true;
 				}		
-				java.sql.PreparedStatement preparedStatement2 = dbConn.prepareStatement("DELETE FROM Relation_user_tag WHERE pseudo = ? && tag_id = ?;");
+				java.sql.PreparedStatement preparedStatement2 = dbConn.prepareStatement("DELETE FROM Relation_user_tag WHERE pseudo = ? AND tag_id = ?;");
 				preparedStatement.setString( 1, pseudo );
 				preparedStatement2.setString( 2, tagID );					
 				//System.out.println(query);
@@ -352,7 +352,7 @@ public class StorageService {
 					deleteStatus2 = true;
 				}
 			
-				java.sql.PreparedStatement preparedStatement3 = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner=? && tag_id = ?;");
+				java.sql.PreparedStatement preparedStatement3 = dbConn.prepareStatement("DELETE FROM Tag WHERE pseudo_owner=? AND tag_id = ?;");
 				preparedStatement3.setString(1, pseudo);
 				preparedStatement3.setString( 2, tagID );					
 				//System.out.println(query);
