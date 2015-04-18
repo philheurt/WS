@@ -29,4 +29,6 @@ public class TagCode {
 	public final static int GET_LAST_TAGS_UPDATE_TIME = 19;
 	public final static int GET_LAST_PROFILES_UPDATE_TIME = 20;
 	public final static int CREATE_PROFILE_WITH_TAGS = 21;
+	public final static int GET_LAST_PERSONAL_INFORMATION_UPDATE_TIME = 20;
+	
 }

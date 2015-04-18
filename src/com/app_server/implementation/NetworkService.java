@@ -65,6 +65,7 @@ public class NetworkService {
 					obj.put("first_name", account.getFirstName());
 					obj.put("last_name", account.getLastName());
 					obj.put("email", account.getEMailAddress());
+					obj.put("braceletUID",account.getBraceletUID() == null ? "" : account.getBraceletUID() );
 					obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 					obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
 			
@@ -1128,7 +1129,7 @@ return obj.toString();
 				// http://92.222.33.38:8080/app_server/ns/retrieveprofiles?pseudo=abc&password=abc
 				public String lastPersonalInformationUpdateTime(@QueryParam("pseudo") String pseudo,@QueryParam("password") String password) throws Exception,JSONException {
 				JSONObject obj = new JSONObject();
-				obj.put("tag", TagCode.GET_LAST_PROFILES_UPDATE_TIME);
+				obj.put("tag", TagCode.GET_LAST_PERSONAL_INFORMATION_UPDATE_TIME);
 				if (!FieldVerifier.verifyName(pseudo)) {
 					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 				} else if (!FieldVerifier.verifyPassword(password)) {
@@ -1137,37 +1138,7 @@ return obj.toString();
 					
 					if (Utilities.isNotNull(pseudo)) {
 						if (StorageService.checkLogin(pseudo, password)) {							
-							obj.put("returnCode", ErrorCode.NO_ERROR);
-							// HTTP Get Method
-							@GET
-							@Path("/getlastprofilesupdatetime")
-							// Produces JSON as response
-							@Produces(MediaType.APPLICATION_JSON)
-							// Query parameters are parameters:
-							// http://92.222.33.38:8080/app_server/ns/retrieveprofiles?pseudo=abc&password=abc
-							public String lastProfilesUpdateTime(@QueryParam("pseudo") String pseudo,@QueryParam("password") String password) throws Exception,JSONException {
-							JSONObject obj = new JSONObject();
-							obj.put("tag", TagCode.GET_LAST_PROFILES_UPDATE_TIME);
-							if (!FieldVerifier.verifyName(pseudo)) {
-								obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
-							} else if (!FieldVerifier.verifyPassword(password)) {
-								obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
-							} else
-								
-								if (Utilities.isNotNull(pseudo)) {
-									if (StorageService.checkLogin(pseudo, password)) {							
-										obj.put("returnCode", ErrorCode.NO_ERROR);
-										obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());							
-
-									} else { // wrong pseudo/password combination
-										obj.put("returnCode",
-												ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
-									}
-								} else { // information incomplete
-									obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
-								}
-							return obj.toString();
-						}			
+							obj.put("returnCode", ErrorCode.NO_ERROR);			
 
 						} else { // wrong pseudo/password combination
 							obj.put("returnCode",
