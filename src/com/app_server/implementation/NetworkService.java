@@ -853,23 +853,27 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 						// message
 						// d'erreur, qu'on fait apr�s pour conserver la cha�ne de
 						// if/else
-						boolean bool2 = false;
-						for (int i1 = 0; i1 < listUIDs.size(); i1++) {
-							if (StorageService.insertTagToProfile(pseudo,
+						boolean bool2 = true;
+						for (int i1 = 0; bool2 && i1 < listUIDs.size(); i1++) {
+							if (! StorageService.insertTagToProfile(pseudo,
 									profileName, listUIDs.get(i))) {
-								bool2 = true;
+								bool2 = false;
 							}
 						}
 						if (!bool2) { // problem at the DB level
 							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
 						}
+						else
+						{
+							obj.put("returnCode", ErrorCode.NO_ERROR);
+							obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
+							StorageService.modifyLastProfilesUpdateTime(pseudo);
+							obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
+							obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
+							obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
+						}
 					} else {
-						obj.put("returnCode", ErrorCode.NO_ERROR);
-						obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
-						StorageService.modifyLastProfilesUpdateTime(pseudo);
-						obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
-						obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
-						obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());			
+						obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);				
 					}
 				} else { // wrong pseudo/password combination
 					obj.put("returnCode",
@@ -881,7 +885,93 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 
 			return obj.toString();
 		}
-	
+
+		// HTTP POST Method
+			@POST
+			@Path("/replacetaglistofprofile")
+			@Consumes(MediaType.MULTIPART_FORM_DATA)
+			// Produces JSON as response
+			@Produces(MediaType.APPLICATION_JSON)
+			// Query parameters are parameters:
+			// http://92.222.33.38:8080/app_server/ns/createprofilewithtags
+			public String replaceTagListOfProfile(@FormDataParam("pseudo") String pseudo,@FormDataParam("password") String password,@FormDataParam("profileName") String profileName,@FormDataParam("jsonUIDs") String jsonUIDs) throws Exception,JSONException {
+				JSONObject obj = new JSONObject();
+				obj.put("tag", TagCode.REPLACE_TAG_LIST_OF_PROFILE);
+				
+				HashSet<String> listUIDs = new HashSet<String>();
+				// on interpr�te le json pour remplir listUIDs
+				JSONObject jsonTemp = new JSONObject(jsonUIDs);
+				int i = 0;
+				// on utilise que JSON.get(missing key) = NULL
+				while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
+					listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
+					i++;
+				}
+
+				boolean bool = false;
+				for (int i1 = 0; i1 < listUIDs.size(); i1++) {
+					if (!FieldVerifier.verifyTagUID(listUIDs.get(i1))) {
+						bool = true;
+					}
+				}
+				if (!FieldVerifier.verifyName(pseudo)) {
+					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
+				} else if (!FieldVerifier.verifyName(password)) {
+					obj.put("returnCode", ErrorCode.MISSING_PASSWORD);
+				} else if (bool) {
+					obj.put("returnCode", ErrorCode.MISSING_TAG_ID);
+				} else if (!FieldVerifier.verifyName(profileName)) {
+					obj.put("returnCode", ErrorCode.MISSING_PROFILE_NAME);
+				} else if (Utilities.isNotNull(pseudo)) {
+					if (StorageService.checkLogin(pseudo, password)) {
+						int profileID = StorageService.getProfileID(pseudo, profileName);
+						
+						if(StorageService.deleteTagFromProfile(pseudo, profileID, id)){		
+							// on effectue l'insertion et un bool2 � c�t� pour le
+							// message
+							// d'erreur, qu'on fait apr�s pour conserver la cha�ne de
+							// if/else
+							if (StorageService.deleteAllTagsFromProfile(pseudo, profileID)) { // problem at the DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+							}
+							
+							boolean bool2 = true;
+							
+							Object uidArray[] = listUIDs.toArray();
+							
+							for (int i1 = 0; bool2 && i1 < uidArray.size(); i1++) {
+								if (! StorageService.insertTagToProfile(pseudo,
+										profileName, (String) uidArray[i1])) {
+									bool2 = false;
+								}
+							}
+							if (!bool2) { // problem at the DB level
+								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
+							}
+							else
+							{
+								obj.put("returnCode", ErrorCode.NO_ERROR);
+								obj.put("oldlastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
+								StorageService.modifyLastProfilesUpdateTime(pseudo);
+								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
+								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
+								obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
+							}
+						} else {
+							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);				
+						}
+					} else { // wrong pseudo/password combination
+						obj.put("returnCode",
+								ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
+					}
+				} else { // information incomplete
+					obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+				}
+
+				return obj.toString();
+			}
+		
+		
 	// HTTP Get Method
 	@GET 					
 	@Path("/addtagtoprofile")

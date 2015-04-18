@@ -449,8 +449,44 @@ public class StorageService {
 		}
 		return profileID;
 	}
-		
+
 	public static boolean deleteTagFromProfile(String pseudo, int profileID, String id) throws SQLException, Exception {
+		
+		boolean deleteStatus = false;
+		Connection dbConn1 = null;
+		try {
+			dbConn1 = StorageService.createConnection();
+			java.sql.PreparedStatement preparedStatement = dbConn1.prepareStatement("DELETE FROM Relation_profile_tag WHERE profile_id = ? AND tag_id = ?;");
+			preparedStatement.setInt( 1, profileID );
+			preparedStatement.setString( 2, id );
+			//System.out.println(query);
+			int records = preparedStatement.executeUpdate();
+			//System.out.println(records);
+			//When record is successfully inserted
+			if (records > 0) {
+				deleteStatus = true;
+			}
+		} catch (SQLException sqle) {
+			sqle.printStackTrace();
+			if (dbConn1 != null) {
+				dbConn1.close();
+			}
+			throw sqle;
+		} catch (Exception e) {
+			e.printStackTrace();
+			if (dbConn1 != null) {
+				dbConn1.close();
+			}
+			throw e;
+		} finally {
+			if (dbConn1 != null) {
+				dbConn1.close();
+			}
+		}
+		return deleteStatus;
+	}
+
+	public static boolean deleteAllTagsFromProfile(String pseudo, int profileID) throws SQLException, Exception {
 		
 		boolean deleteStatus = false;
 		Connection dbConn1 = null;
@@ -484,6 +520,7 @@ public class StorageService {
 		}
 		return deleteStatus;
 	}
+	
 	
 	/**
      * Method to map the result of the login query into an account object
