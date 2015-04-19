@@ -532,7 +532,8 @@ public class StorageService {
      */
 	
 	private static Tag mapTag( ResultSet resultSet ) throws SQLException {
-	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ));	  
+	    Tag tag = new Tag (resultSet.getString( "tag_id" ), resultSet.getString( "object_name" ));
+	    tag.setImageVersion(resultSet.getInt("picture_version"));
 	    return tag;
 	}
 	
@@ -542,7 +543,7 @@ public class StorageService {
 		try {
 			dbConn = StorageService.createConnection();
 			if(StorageService.checkLogin(pseudo, password)){
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name FROM Tag where pseudo_owner = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id,object_name,picture_version FROM Tag where pseudo_owner = ?;");
 			preparedStatement.setString( 1, pseudo );						
 			ResultSet rs = preparedStatement.executeQuery();
 			while (rs.next()) {
@@ -895,7 +896,7 @@ public class StorageService {
 		Tag resultTag = new Tag("a","b");
 		try {
 			dbConn = StorageService.createConnection();		
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id, object_name, picture FROM Tag WHERE tag_id = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("SELECT tag_id, object_name, picture_version FROM Tag WHERE tag_id = ?;");
 			preparedStatement.setString( 1, id );
 			ResultSet rs = preparedStatement.executeQuery();
 			if(rs.next()){
@@ -1139,7 +1140,7 @@ public class StorageService {
 		boolean modifyImageTag = false;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET picture = ?, picture_version = picture_version + 1 WHERE tag_id = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET picture = ? AND picture_version = (picture_version + 1) WHERE tag_id = ?;");
 			preparedStatement.setBinaryStream( 1, picture);
 			preparedStatement.setString(2,id);
 
