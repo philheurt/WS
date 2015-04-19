@@ -501,7 +501,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/modifyprofilename?pseudo=abc&password=abc&id=xyz&profile_name=abc&new_profile_name=abc
 		public String modifyProfileName(@QueryParam("pseudo") String pseudo, @QueryParam("password") String password, @QueryParam("profile_name") String profileName, @QueryParam("new_profile_name") String newProfileName) throws Exception, JSONException{
 				JSONObject obj = new JSONObject();
-				obj.put("modifyprofilename", TagCode.MODIFY_PROFILE_NAME);
+				obj.put("tag", TagCode.MODIFY_PROFILE_NAME);
 				if(!FieldVerifier.verifyName(pseudo)){
 					obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 				}

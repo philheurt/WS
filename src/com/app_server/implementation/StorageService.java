@@ -1048,7 +1048,7 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE USER SET tags_change_time = NOW() WHERE pseudo = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET tags_change_time = NOW() WHERE pseudo = ?;");
 			preparedStatement.setString( 1, pseudo );
 
 			int records = preparedStatement.executeUpdate();
@@ -1078,7 +1078,7 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE USER SET profiles_change_time = NOW() WHERE pseudo = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET profiles_change_time = NOW() WHERE pseudo = ?;");
 			preparedStatement.setString( 1, pseudo );
 
 			int records = preparedStatement.executeUpdate();
@@ -1108,7 +1108,7 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE USER SET personal_information_change_time = NOW() WHERE pseudo = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE User SET personal_information_change_time = NOW() WHERE pseudo = ?;");
 			preparedStatement.setString( 1, pseudo );
 
 			int records = preparedStatement.executeUpdate();
@@ -1139,7 +1139,7 @@ public class StorageService {
 		boolean modifyImageTag = false;
 		try {
 			dbConn = StorageService.createConnection();
-			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE TAG SET picture = ?, picture_version = picture_version + 1 WHERE tag_id = ?;");
+			java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("UPDATE Tag SET picture = ?, picture_version = picture_version + 1 WHERE tag_id = ?;");
 			preparedStatement.setBinaryStream( 1, picture);
 			preparedStatement.setString(2,id);
 
