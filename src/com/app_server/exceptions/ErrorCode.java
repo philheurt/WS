@@ -22,7 +22,7 @@ public class ErrorCode {
 	public final static int ILLEGAL_USE_OF_SPECIAL_CHARACTER = 15;
 	public final static int DATABASE_ACCESS_ISSUE = 16;
 	public final static int INFORMATION_INCOMPLETE = 17;
-
+	public final static int JSON_ENCODING_ISSUE = 18;
 	
 	public final static int UNKNOWN_ERROR = 666;
 	

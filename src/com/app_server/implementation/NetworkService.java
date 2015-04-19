@@ -660,14 +660,14 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			if ((password != newPassword)&&(StorageService.modifyPassword(pseudo, newPassword))){
 			
 					obj.put("returnCode",ErrorCode.NO_ERROR);
-					obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
-					obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());		
-					obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());			
+					obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, newPassword).getTime());							
+					obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, newPassword).getTime());		
+					obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, newPassword).getTime());			
 			}else{
 					obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);																	
 			}
 		}else{
-			obj.put("returnCode",ErrorCode.UNKNOWN_ERROR);											
+			obj.put("returnCode",ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);											
 	
 	}
 		return obj.toString();
@@ -826,10 +826,11 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 			obj.put("tag", TagCode.CREATE_PROFILE_WITH_TAGS);
 			ArrayList<String> listUIDs = new ArrayList<String>();
 			// on interpr�te le json pour remplir listUIDs
-			JSONObject jsonTemp = new JSONObject(jsonUIDs);
+			if (jsonUIDs != null && !jsonUIDs.isEmpty())
+			{JSONObject jsonTemp = new JSONObject(jsonUIDs);		
 			int i = 0;
 			// on utilise que JSON.get(missing key) = NULL
-			while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
+			while (jsonTemp.has(Integer.toString(i))) {
 				listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
 				i++;
 			}
@@ -858,7 +859,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 						boolean bool2 = true;
 						for (int i1 = 0; bool2 && i1 < listUIDs.size(); i1++) {
 							if (! StorageService.insertTagToProfile(pseudo,
-									profileName, listUIDs.get(i))) {
+									profileName, listUIDs.get(i1))) {
 								bool2 = false;
 							}
 						}
@@ -883,8 +884,10 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 				}
 			} else { // information incomplete
 				obj.put("returncode", ErrorCode.INFORMATION_INCOMPLETE);
+			}		
+			}else{
+				obj.put("returnCode", ErrorCode.JSON_ENCODING_ISSUE);
 			}
-
 			return obj.toString();
 		}
 
