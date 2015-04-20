@@ -322,16 +322,6 @@ public class StorageService {
 		Connection dbConn = null;
 		try {
 				dbConn = StorageService.createConnection();
-				java.sql.PreparedStatement preparedStatement = dbConn.prepareStatement("DELETE FROM Relation_position_tag WHERE tag_id = ?;");
-				preparedStatement.setString( 1, tagID );					
-				//System.out.println(query);
-				int records = preparedStatement.executeUpdate();
-				//System.out.println(records);
-				//When record is successfully inserted
-				if (records > 0) {
-					deleteStatus = true;
-				}
-
 				java.sql.PreparedStatement preparedStatement1 = dbConn.prepareStatement("DELETE FROM Relation_profile_tag WHERE tag_id = ?;");
 				preparedStatement1.setString( 1, tagID );					
 				//System.out.println(query);
@@ -342,7 +332,7 @@ public class StorageService {
 					deleteStatus1 = true;
 				}		
 				java.sql.PreparedStatement preparedStatement2 = dbConn.prepareStatement("DELETE FROM Relation_user_tag WHERE pseudo = ? AND tag_id = ?;");
-				preparedStatement.setString( 1, pseudo );
+				preparedStatement2.setString( 1, pseudo );
 				preparedStatement2.setString( 2, tagID );					
 				//System.out.println(query);
 				int records2 = preparedStatement2.executeUpdate();
@@ -381,7 +371,7 @@ public class StorageService {
 			}
 		}		
 		//vaut true si les 4 ont march� ... du coup si �a foire on ne sait pas dans laquelle des 4.. mais flemme de modifier
-		return deleteStatus;
+		return deleteStatus3;
 	}
 		
 	public static boolean updateProfileName(int profileID, String newProfileName)  throws SQLException, Exception {
