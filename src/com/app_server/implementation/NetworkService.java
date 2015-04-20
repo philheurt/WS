@@ -934,14 +934,12 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 				} else if (Utilities.isNotNull(pseudo)) {
 					if (StorageService.checkLogin(pseudo, password)) {
 						int profileID = StorageService.getProfileID(pseudo, profileName);
-						
+						boolean bool2 = true;
 						if(StorageService.deleteAllTagsFromProfile(pseudo, profileID)){									
-							boolean bool2 = true;
+							
 														
-							for (int i1 = 0; bool2 && i1 < uidArray.length; i1++) {
-								if (! StorageService.insertTagToProfile(pseudo,
-										profileName, (String) uidArray[i1])) {
-									bool2 = false;
+							for (int i1 = 0;i1 < uidArray.length; i1++) {
+								bool2 = bool2&&StorageService.insertTagToProfile(pseudo,profileName, (String) uidArray[i1]);
 								}
 							}
 							if (!bool2) { // problem at the DB level
@@ -955,10 +953,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 								obj.put("lasttagsupdatetime", StorageService.retrieveLastTagsUpdateTime(pseudo, password).getTime());							
 								obj.put("lastprofilesupdatetime", StorageService.retrieveLastProfilesUpdateTime(pseudo, password).getTime());
 								obj.put("lastpersonalinformationsupdatetime", StorageService.retrieveLastPersonalInformationUpdateTime(pseudo, password).getTime());
-							}
-						} else {
-							obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);				
-						}
+							}						
 					} else { // wrong pseudo/password combination
 						obj.put("returnCode",
 								ErrorCode.INVALID_PSEUDO_PASSWORD_COMBINATION);
