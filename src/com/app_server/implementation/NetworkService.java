@@ -935,19 +935,9 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					if (StorageService.checkLogin(pseudo, password)) {
 						int profileID = StorageService.getProfileID(pseudo, profileName);
 						
-						if(StorageService.deleteAllTagsFromProfile(pseudo, profileID)){		
-							// on effectue l'insertion et un bool2 � c�t� pour le
-							// message
-							// d'erreur, qu'on fait apr�s pour conserver la cha�ne de
-							// if/else
-							if (StorageService.deleteAllTagsFromProfile(pseudo, profileID)) { // problem at the DB level
-								obj.put("returnCode", ErrorCode.DATABASE_ACCESS_ISSUE);
-							}
-							
+						if(StorageService.deleteAllTagsFromProfile(pseudo, profileID)){									
 							boolean bool2 = true;
-							
-						
-							
+														
 							for (int i1 = 0; bool2 && i1 < uidArray.length; i1++) {
 								if (! StorageService.insertTagToProfile(pseudo,
 										profileName, (String) uidArray[i1])) {
