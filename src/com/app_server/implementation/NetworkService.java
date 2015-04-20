@@ -264,7 +264,7 @@ public class NetworkService {
 		// Query parameters are parameters: http://92.222.33.38:8080/app_server/ns/addtag?pseudo=abc&password=abc&object_name=xyz&picture=url
 			public String modifyObjectImage( @FormDataParam("file") InputStream picture, @FormDataParam("pseudo") String pseudo, @FormDataParam("password") String password,@FormDataParam("id") String id) throws Exception, JSONException{
 			JSONObject obj = new JSONObject();
-			obj.put("tag", TagCode.ADD_TAG);
+			obj.put("tag", TagCode.MODIFY_OBJECT_IMAGE);
 			if(!FieldVerifier.verifyName(pseudo)){
 				obj.put("returnCode", ErrorCode.MISSING_PSEUDO);
 			}
@@ -279,7 +279,7 @@ public class NetworkService {
 					else 
 						
 							
-								if(Utilities.isNotNull(pseudo)){
+								if(Utilities.isNotNull(pseudo)&&Utilities.isNotNull(password)){
 									if (StorageService.checkLogin(pseudo, password)){			
 										try{
 										if(StorageService.modifyImageTag(id,picture)){
@@ -572,6 +572,10 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 					tagJson.put("tag_id", tag.getUid());
 					tagJson.put("object_name", tag.getObjectName());
 					tagJson.put("picture_version", tag.getImageVersion());
+					if(tag.getObjectImageName()=="picture"){
+					tagJson.put("picture", true);
+					}else{tagJson.put("picture", false);				
+					}
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 					}	
@@ -908,7 +912,7 @@ public String removeTagFromProfile(@QueryParam("pseudo") String pseudo, @QueryPa
 				JSONObject jsonTemp = new JSONObject(jsonUIDs);
 				int i = 0;
 				// on utilise que JSON.get(missing key) = NULL
-				while (Utilities.isNotNull((String) jsonTemp.get(Integer.toString(i)))) {
+				while (jsonTemp.has(Integer.toString(i))) {
 					listUIDs.add((String) jsonTemp.get(Integer.toString(i)));
 					i++;
 				}

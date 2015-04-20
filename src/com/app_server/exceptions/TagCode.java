@@ -32,5 +32,6 @@ public class TagCode {
 	public final static int GET_LAST_PERSONAL_INFORMATION_UPDATE_TIME = 22;
 	public final static int GET_LAST_UPDATE_TIMES = 23;
 	public final static int REPLACE_TAG_LIST_OF_PROFILE = 24;
+	public final static int MODIFY_OBJECT_IMAGE = 25;
 	
 }
